@@ -6,6 +6,7 @@ import banTslintComment from './ban-tslint-comment';
 import banTypes from './ban-types';
 import braceStyle from './brace-style';
 import classLiteralPropertyStyle from './class-literal-property-style';
+import classMethodsUseThis from './class-methods-use-this';
 import commaDangle from './comma-dangle';
 import commaSpacing from './comma-spacing';
 import consistentGenericConstructors from './consistent-generic-constructors';
@@ -139,6 +140,7 @@ export default {
   'ban-types': banTypes,
   'brace-style': braceStyle,
   'class-literal-property-style': classLiteralPropertyStyle,
+  'class-methods-use-this': classMethodsUseThis,
   'comma-dangle': commaDangle,
   'comma-spacing': commaSpacing,
   'consistent-generic-constructors': consistentGenericConstructors,
