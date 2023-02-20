@@ -10,7 +10,7 @@
     "serve": "docusaurus serve",
     "start": "docusaurus start",
     "swizzle": "docusaurus swizzle",
-    "test": "tsc --project ./tsconfig.docusaurus.json && playwright test",
+    "test": "playwright test",
     "typecheck": "tsc"
   },
   "dependencies": {
