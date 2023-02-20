@@ -3,9 +3,8 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "rootDir": ".",
-    "allowJs": true
+    "rootDir": "."
   },
-  "include": ["./*.ts", "./tests/*.test.ts", "pack-packages.js"],
+  "include": ["./*.ts", "./tests/*.test.ts"],
   "references": []
 }
