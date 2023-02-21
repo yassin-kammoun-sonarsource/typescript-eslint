@@ -13,7 +13,7 @@ on:
 env:
   PRIMARY_NODE_VERSION: 18
   # Only set the read-write token if we are on the main branch
-  NX_CLOUD_ACCESS_TOKEN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.NX_CLOUD_ACCESS_TOKEN }}
+  NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
 
 defaults:
   run:
@@ -201,10 +201,11 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Wait for Netlify deployment
-        uses: probablyup/wait-for-netlify-action@3.2.0
+        uses: probablyup/wait-for-netlify-action@v3.4.0
         id: waitForDeployment
         with:
           site_id: '128d21c7-b2fe-45ad-b141-9878fcf5de3a'
+          max_timeout: 300 # 5 minutes
         env:
           NETLIFY_TOKEN: ${{ secrets.NETLIFY_TOKEN }}
 
