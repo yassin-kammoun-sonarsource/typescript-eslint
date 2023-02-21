@@ -1,5 +1,7 @@
 'use strict';
 
+const { join } = require('path');
+
 // @ts-check
 /** @type {import('@jest/types').Config.InitialOptions} */
 module.exports = {
@@ -18,7 +20,9 @@ module.exports = {
     'json',
     'node',
   ],
-  setupFilesAfterEnv: ['console-fail-test/setup.js'],
+  setupFilesAfterEnv: [
+    join(__dirname, 'node_modules/console-fail-test/setup.js'),
+  ],
   testRegex: ['./tests/.+\\.test\\.ts$', './tests/.+\\.spec\\.ts$'],
   transform: {
     '^.+\\.(t|j)sx?$': [
