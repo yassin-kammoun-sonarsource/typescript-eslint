@@ -1,11 +1,11 @@
 import React from 'react';
 
-export interface InfoBlockProps {
+export interface AlertBlockProps {
   readonly type: 'success' | 'info' | 'note' | 'warning' | 'danger';
   readonly children: React.ReactNode;
 }
 
-function InfoBlock(props: InfoBlockProps): JSX.Element {
+function AlertBlock(props: AlertBlockProps): JSX.Element {
   return (
     <div className={`admonition alert alert--${props.type}`}>
       <div className="admonition-content">{props.children}</div>
@@ -13,4 +13,4 @@ function InfoBlock(props: InfoBlockProps): JSX.Element {
   );
 }
 
-export default InfoBlock;
+export default AlertBlock;

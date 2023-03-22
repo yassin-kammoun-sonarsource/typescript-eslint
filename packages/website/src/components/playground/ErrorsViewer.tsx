@@ -1,12 +1,12 @@
 import Link from '@docusaurus/Link';
 import IconExternalLink from '@theme/Icon/ExternalLink';
 import clsx from 'clsx';
-import type * as Monaco from 'monaco-editor';
+import type Monaco from 'monaco-editor';
 import React, { useEffect, useState } from 'react';
 
-import type { InfoBlockProps } from '../layout/InfoBlock';
-import InfoBlock from '../layout/InfoBlock';
 import styles from './ErrorsViewer.module.css';
+import type { AlertBlockProps } from '../layout/AlertBlock';
+import AlertBlock from '../layout/AlertBlock';
 import type { ErrorGroup, ErrorItem } from './types';
 
 export interface ErrorsViewerProps {
@@ -16,7 +16,7 @@ export interface ErrorsViewerProps {
 export interface ErrorViewerProps {
   readonly value: Error;
   readonly title: string;
-  readonly type: InfoBlockProps['type'];
+  readonly type: AlertBlockProps['type'];
 }
 
 export interface ErrorBlockProps {
@@ -33,7 +33,7 @@ export interface FixButtonProps {
 
 function severityClass(
   severity: Monaco.MarkerSeverity,
-): InfoBlockProps['type'] {
+): AlertBlockProps['type'] {
   switch (severity) {
     case 8:
       return 'danger';
@@ -66,7 +66,7 @@ function ErrorBlock({
   isLocked,
 }: ErrorBlockProps): JSX.Element {
   return (
-    <InfoBlock type={severityClass(item.severity)}>
+    <AlertBlock type={severityClass(item.severity)}>
       <div className={clsx(!!item.fixer && styles.fixerContainer)}>
         <pre className={styles.errorPre}>
           {item.message} {item.location}
@@ -83,7 +83,7 @@ function ErrorBlock({
         <div>
           {item.suggestions.map((fixer, index) => (
             <div
-              key={index.toString()}
+              key={String(index)}
               className={clsx(styles.fixerContainer, styles.fixer)}
             >
               <span>&gt; {fixer.message}</span>
@@ -96,7 +96,7 @@ function ErrorBlock({
           ))}
         </div>
       )}
-    </InfoBlock>
+    </AlertBlock>
   );
 }
 
@@ -108,16 +108,14 @@ export function ErrorViewer({
   return (
     <div className={styles.list}>
       <div className="margin-top--md">
-        <InfoBlock type={type}>
+        <AlertBlock type={type}>
           <div className={styles.fixerContainer}>
             <h4>{title}</h4>
           </div>
-          {type === 'danger' ? (
-            <pre className={styles.errorPre}>{value?.stack}</pre>
-          ) : (
-            value.message
-          )}
-        </InfoBlock>
+          <pre className={styles.errorPre}>
+            {type === 'danger' ? value?.stack : value.message}
+          </pre>
+        </AlertBlock>
       </div>
     </div>
   );
@@ -152,7 +150,7 @@ export function ErrorsViewer({ value }: ErrorsViewerProps): JSX.Element {
                 )}
               </h4>
               {items.map((item, index) => (
-                <div className="margin-bottom--sm" key={index.toString()}>
+                <div className="margin-bottom--sm" key={String(index)}>
                   <ErrorBlock
                     isLocked={isLocked}
                     setIsLocked={setIsLocked}
@@ -165,9 +163,9 @@ export function ErrorsViewer({ value }: ErrorsViewerProps): JSX.Element {
         })
       ) : (
         <div className="margin-top--md">
-          <InfoBlock type="success">
+          <AlertBlock type="success">
             <div>All is ok!</div>
-          </InfoBlock>
+          </AlertBlock>
         </div>
       )}
     </div>
