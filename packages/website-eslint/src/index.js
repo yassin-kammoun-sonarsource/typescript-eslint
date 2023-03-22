@@ -1,10 +1,8 @@
 // eslint-disable-next-line no-undef,import/no-amd
 define(['exports', 'vs/language/typescript/tsWorker'], function (e, _t) {
   const eslintPlugin = require('@typescript-eslint/eslint-plugin');
-  const Linter = require('eslint').Linter;
 
-  e.getScriptKind =
-    require('@typescript-eslint/typescript-estree/use-at-your-own-risk/getScriptKind').getScriptKind;
+  e.Linter = require('eslint').Linter;
   e.analyze =
     require('@typescript-eslint/scope-manager/use-at-your-own-risk/analyze').analyze;
   e.visitorKeys =
@@ -12,12 +10,18 @@ define(['exports', 'vs/language/typescript/tsWorker'], function (e, _t) {
   e.astConverter =
     require('@typescript-eslint/typescript-estree/use-at-your-own-risk/ast-converter').astConverter;
   e.esquery = require('esquery');
+  e.rules = eslintPlugin.rules;
 
-  e.createLinter = function () {
-    const linter = new Linter();
-    for (const name in eslintPlugin.rules) {
-      linter.defineRule(`@typescript-eslint/${name}`, eslintPlugin.rules[name]);
-    }
-    return linter;
-  };
+  const configs = {};
+
+  const eslintConfigs = require('@eslint/js').configs;
+
+  for (const [key, value] of Object.entries(eslintConfigs)) {
+    configs[`eslint:${key}`] = value;
+  }
+  for (const [key, value] of Object.entries(eslintPlugin.configs)) {
+    configs[`plugin:@typescript-eslint/${key}`] = value;
+  }
+
+  e.configs = configs;
 });

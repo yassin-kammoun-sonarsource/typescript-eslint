@@ -1,24 +1,18 @@
-import { isRecord } from '@site/src/components/ast/utils';
-import type { EslintRC, TSConfig } from '@site/src/components/types';
+import type { TSESLint } from '@typescript-eslint/utils';
+import type { JSONSchema4 } from 'json-schema';
 import json5 from 'json5';
 
-export interface OptionDeclarations {
-  name: string;
-  type?: unknown;
-  category?: { message: string };
-  description?: { message: string };
-  element?: {
-    type: unknown;
-  };
-}
+import { isRecord } from '../ast/utils';
+import type { TSConfig } from '../playground/types';
+import type { ConfigOptionsField, ConfigOptionsType } from './ConfigEditor';
 
-export function parseESLintRC(code?: string): EslintRC {
+export function parseESLintRC(code?: string): TSESLint.Linter.Config {
   if (code) {
     try {
       const parsed: unknown = json5.parse(code);
       if (isRecord(parsed)) {
         if ('rules' in parsed && isRecord(parsed.rules)) {
-          return parsed as EslintRC;
+          return parsed as TSESLint.Linter.Config;
         }
         return { ...parsed, rules: {} };
       }
@@ -49,78 +43,59 @@ export function parseTSConfig(code?: string): TSConfig {
   return { compilerOptions: {} };
 }
 
-const moduleRegexp = /(module\.exports\s*=)/g;
-
-function constrainedScopeEval(obj: string): unknown {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval
-  return new Function(`
-    "use strict";
-    var module = { exports: {} };
-    (${obj});
-    return module.exports
-  `)();
-}
-
-export function tryParseEslintModule(value: string): string {
-  try {
-    if (moduleRegexp.test(value)) {
-      const newValue = toJson(constrainedScopeEval(value));
-      if (newValue !== value) {
-        return newValue;
-      }
-    }
-  } catch (e) {
-    console.error(e);
-  }
-  return value;
-}
-
 export function toJson(cfg: unknown): string {
   return JSON.stringify(cfg, null, 2);
 }
 
-export function toJsonConfig(cfg: unknown, prop: string): string {
-  return toJson({ [prop]: cfg });
+export function fromJson(cfg: string): unknown {
+  return JSON.parse(cfg);
 }
 
-export function getTypescriptOptions(): OptionDeclarations[] {
-  const allowedCategories = [
-    'Command-line Options',
-    'Projects',
-    'Compiler Diagnostics',
-    'Editor Support',
-    'Output Formatting',
-    'Watch and Build Modes',
-    'Source Map Options',
-  ];
-
-  const filteredNames = [
-    'moduleResolution',
-    'moduleDetection',
-    'plugins',
-    'typeRoots',
-    'jsx',
-  ];
-
-  // @ts-expect-error: definition is not fully correct
-  return (window.ts.optionDeclarations as OptionDeclarations[]).filter(
-    item =>
-      (item.type === 'boolean' ||
-        item.type === 'list' ||
-        item.type instanceof Map) &&
-      item.description &&
-      item.category &&
-      !allowedCategories.includes(item.category.message) &&
-      !filteredNames.includes(item.name),
-  );
+export function schemaItemToField(
+  name: string,
+  item: JSONSchema4,
+): ConfigOptionsField | null {
+  if (item.type === 'boolean') {
+    return {
+      key: name,
+      type: 'boolean',
+      label: item.description,
+    };
+  } else if (item.type === 'string' && item.enum) {
+    return {
+      key: name,
+      type: 'string',
+      label: item.description,
+      enum: ['', ...(item.enum as string[])],
+    };
+  } else if (item.oneOf) {
+    return {
+      key: name,
+      type: 'boolean',
+      label: item.description,
+      defaults: ['error', 2, 'warn', 1],
+    };
+  }
+  return null;
 }
 
-export const defaultTsConfig = toJson({
-  compilerOptions: {
-    strictNullChecks: true,
-  },
-});
+export function schemaToConfigOptions(
+  options: Record<string, JSONSchema4>,
+): ConfigOptionsType[] {
+  const result = Object.entries(options).reduce<
+    Record<string, ConfigOptionsType>
+  >((group, [name, item]) => {
+    const category = item.title!;
+    group[category] = group[category] ?? {
+      heading: category,
+      fields: [],
+    };
+    const field = schemaItemToField(name, item);
+    if (field) {
+      group[category].fields.push(field);
+    }
+    return group;
+  }, {});
 
-export const defaultEslintConfig = toJson({
-  rules: {},
-});
+  return Object.values(result);
+}

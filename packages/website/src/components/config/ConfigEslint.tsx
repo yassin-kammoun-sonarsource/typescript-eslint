@@ -1,90 +1,60 @@
+import type { TSESLint } from '@typescript-eslint/utils';
+import type { JSONSchema4 } from 'json-schema';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { shallowEqual } from '../lib/shallowEqual';
-import type { ConfigModel, EslintRC, RuleDetails, RuleEntry } from '../types';
+import type { PlaygroundSystem } from '../playground/types';
+import { shallowEqual } from '../util/shallowEqual';
 import type { ConfigOptionsType } from './ConfigEditor';
 import ConfigEditor from './ConfigEditor';
-import { parseESLintRC, toJson } from './utils';
+import { parseESLintRC, schemaToConfigOptions, toJson } from './utils';
 
 export interface ConfigEslintProps {
   readonly isOpen: boolean;
-  readonly onClose: (value?: Partial<ConfigModel>) => void;
-  readonly ruleOptions: RuleDetails[];
-  readonly config?: string;
+  readonly onClose: (isOpen: false) => void;
+  readonly system: PlaygroundSystem;
 }
 
-function checkSeverity(value: unknown): boolean {
-  if (typeof value === 'string' || typeof value === 'number') {
-    return [0, 1, 2, 'off', 'warn', 'error'].includes(value);
+function readConfigSchema(system: PlaygroundSystem): ConfigOptionsType[] {
+  const schemaFile = system.readFile('/schema/eslint.schema');
+  if (schemaFile) {
+    const schema = JSON.parse(schemaFile) as JSONSchema4;
+    if (schema.type === 'object' && schema.properties?.rules?.properties) {
+      return schemaToConfigOptions(
+        schema.properties.rules.properties,
+      ).reverse();
+    }
   }
-  return false;
+
+  return [];
 }
 
-function checkOptions(rule: [string, unknown]): rule is [string, RuleEntry] {
-  if (Array.isArray(rule[1])) {
-    return rule[1].length > 0 && checkSeverity(rule[1][0]);
-  }
-  return checkSeverity(rule[1]);
-}
-
-function ConfigEslint(props: ConfigEslintProps): JSX.Element {
-  const { isOpen, config, onClose: onCloseProps, ruleOptions } = props;
+function ConfigEslint({
+  isOpen,
+  onClose: onCloseProps,
+  system,
+}: ConfigEslintProps): JSX.Element {
   const [options, updateOptions] = useState<ConfigOptionsType[]>([]);
-  const [configObject, updateConfigObject] = useState<EslintRC>();
+  const [configObject, updateConfigObject] = useState<TSESLint.Linter.Config>();
 
   useEffect(() => {
     if (isOpen) {
+      updateOptions(readConfigSchema(system));
+      const config = system.readFile('/.eslintrc');
       updateConfigObject(parseESLintRC(config));
     }
-  }, [isOpen, config]);
-
-  useEffect(() => {
-    updateOptions([
-      {
-        heading: 'Rules',
-        fields: ruleOptions
-          .filter(item => item.name.startsWith('@typescript'))
-          .map(item => ({
-            key: item.name,
-            label: item.description,
-            type: 'boolean',
-            defaults: ['error', 2, 'warn', 1, ['error'], ['warn'], [2], [1]],
-          })),
-      },
-      {
-        heading: 'Core rules',
-        fields: ruleOptions
-          .filter(item => !item.name.startsWith('@typescript'))
-          .map(item => ({
-            key: item.name,
-            label: item.description,
-            type: 'boolean',
-            defaults: ['error', 2, 'warn', 1, ['error'], ['warn'], [2], [1]],
-          })),
-      },
-    ]);
-  }, [ruleOptions]);
+  }, [isOpen, system]);
 
   const onClose = useCallback(
-    (newConfig: Record<string, unknown>) => {
-      const cfg = Object.fromEntries(
-        Object.entries(newConfig)
-          .map<[string, unknown]>(([name, value]) =>
-            Array.isArray(value) && value.length === 1
-              ? [name, value[0]]
-              : [name, value],
-          )
-          .filter(checkOptions),
-      );
-      if (!shallowEqual(cfg, configObject?.rules)) {
-        onCloseProps({
-          eslintrc: toJson({ ...(configObject ?? {}), rules: cfg }),
-        });
-      } else {
-        onCloseProps();
+    (newRules: Record<string, unknown>) => {
+      if (!shallowEqual(newRules, configObject?.rules)) {
+        system.writeFile(
+          '/.eslintrc',
+          toJson({ ...(configObject ?? {}), rules: newRules }),
+        );
       }
+      onCloseProps(false);
     },
-    [onCloseProps, configObject],
+    [onCloseProps, configObject, system],
   );
 
   return (

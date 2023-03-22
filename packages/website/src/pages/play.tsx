@@ -1,7 +1,8 @@
 import BrowserOnly from '@docusaurus/BrowserOnly';
-import Loader from '@site/src/components/layout/Loader';
 import Layout from '@theme/Layout';
 import React, { lazy, Suspense } from 'react';
+
+import Loader from '../components/layout/Loader';
 
 function Play(): JSX.Element {
   return (
@@ -11,7 +12,9 @@ function Play(): JSX.Element {
           const Playground = lazy(
             () =>
               // @ts-expect-error: This does not follow Node resolution
-              import('../components/Playground') as Promise<() => JSX.Element>,
+              import('../components/playground/PlaygroundRoot') as Promise<
+                () => JSX.Element
+              >,
           );
           return (
             <Suspense fallback={<Loader />}>
