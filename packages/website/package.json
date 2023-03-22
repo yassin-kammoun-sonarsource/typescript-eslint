@@ -6,7 +6,7 @@
     "build": "docusaurus build",
     "clear": "docusaurus clear",
     "format": "prettier --write \"./**/*.{md,mdx,ts,js,tsx,jsx}\" --ignore-path ../../.prettierignore",
-    "generate-website-dts": "tsx ./tools/generate-package-versions.ts",
+    "generate-package-versions": "tsx ./tools/generate-package-versions.ts",
     "lint": "nx lint",
     "serve": "docusaurus serve",
     "start": "docusaurus start",

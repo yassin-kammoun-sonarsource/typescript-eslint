@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   // );
   const fileUrl = path.join(
     __dirname,
-    '../packages/website/src/components/playground/packageVersions.json',
+    '../src/components/playground/packageVersions.json',
   );
 
   await fs.writeFile(
