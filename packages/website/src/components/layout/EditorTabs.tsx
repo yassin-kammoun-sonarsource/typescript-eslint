@@ -7,6 +7,7 @@ import styles from './EditorTabs.module.css';
 export interface EditorTabsProps<T extends string | boolean> {
   readonly tabs: ({ value: T; label: string } | T)[];
   readonly active: T;
+  readonly showVisualEditor?: boolean;
   readonly change: (name: T) => void;
   readonly showModal?: (name: T) => void;
 }
@@ -14,6 +15,7 @@ export interface EditorTabsProps<T extends string | boolean> {
 function EditorTabs<T extends string | boolean>({
   tabs,
   active,
+  showVisualEditor,
   change,
   showModal,
 }: EditorTabsProps<T>): JSX.Element {
@@ -37,10 +39,10 @@ function EditorTabs<T extends string | boolean>({
           </button>
         ))}
       </div>
-      {(active === '.eslintrc' || active === 'tsconfig.json') && showModal && (
+      {showVisualEditor && (
         <button
           className={clsx(styles.tabStyle, 'button')}
-          onClick={(): void => showModal(active)}
+          onClick={(): void => showModal?.(active)}
         >
           Visual Editor
           <EditIcon width={12} height={12} />

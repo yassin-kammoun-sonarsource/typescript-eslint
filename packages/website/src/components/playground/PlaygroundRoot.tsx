@@ -134,6 +134,7 @@ function PlaygroundRoot(): JSX.Element {
               active={activeFile}
               change={setFileName}
               showModal={setShowModal}
+              showVisualEditor={activeFile !== editorFile}
             />
             <LoadingEditor
               tsVersion={config.ts}
