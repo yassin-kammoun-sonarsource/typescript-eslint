@@ -56,7 +56,8 @@ function OptionsSelectorContent({
       <Expander label="Info">
         <InputLabel name="TypeScript">
           <Dropdown
-            name="ts-version"
+            name="ts"
+            className="text--right"
             options={tsVersions}
             value={config.ts}
             onChange={(ts): void => setConfig({ ts })}
@@ -66,20 +67,20 @@ function OptionsSelectorContent({
         <InputLabel name="TSEslint">{process.env.TS_ESLINT_VERSION}</InputLabel>
       </Expander>
       <Expander label="Options">
-        <InputLabel name="Source type">
-          <Dropdown
-            name="sourceType"
-            value={config.sourceType ?? 'module'}
-            onChange={(sourceType): void => setConfig({ sourceType })}
-            options={['script', 'module']}
-          />
-        </InputLabel>
         <InputLabel name="File type">
           <Dropdown
             name="fileType"
             value={config.fileType ?? 'ts'}
             onChange={(fileType): void => setConfig({ fileType })}
             options={fileTypes}
+          />
+        </InputLabel>
+        <InputLabel name="Source type">
+          <Dropdown
+            name="sourceType"
+            value={config.sourceType ?? 'module'}
+            onChange={(sourceType): void => setConfig({ sourceType })}
+            options={['script', 'module']}
           />
         </InputLabel>
         <InputLabel name="Auto scroll">
