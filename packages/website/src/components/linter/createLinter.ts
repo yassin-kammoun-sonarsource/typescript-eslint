@@ -5,7 +5,7 @@ import type * as ts from 'typescript';
 
 import { parseESLintRC, parseTSConfig } from '../config/utils';
 import type { PlaygroundSystem } from '../playground/types';
-import { debounce } from '../util/debounce';
+import { debounce } from '../lib/debounce';
 import { defaultEslintConfig, PARSER_NAME } from './config';
 import { createParser } from './createParser';
 import type { Disposable, UpdateModel } from './types';

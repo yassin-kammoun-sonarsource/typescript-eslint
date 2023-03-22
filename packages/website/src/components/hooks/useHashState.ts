@@ -2,8 +2,8 @@ import * as lzString from 'lz-string';
 import { useCallback, useEffect, useState } from 'react';
 
 import { toJson } from '../config/utils';
+import { hasOwnProperty } from '../lib/has-own-property';
 import type { ConfigModel } from '../playground/types';
-import { hasOwnProperty } from '../util/has-own-property';
 
 function writeQueryParam(value: string | null): string {
   return (value && lzString.compressToEncodedURIComponent(value)) || '';

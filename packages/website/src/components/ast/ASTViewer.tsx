@@ -2,8 +2,8 @@ import type * as ESQuery from 'esquery';
 import React, { useEffect, useMemo } from 'react';
 
 import CopyButton from '../inputs/CopyButton';
-import { debounce } from '../util/debounce';
-import { scrollIntoViewIfNeeded } from '../util/scroll-into';
+import { debounce } from '../lib/debounce';
+import { scrollIntoViewIfNeeded } from '../lib/scroll-into';
 import styles from './ASTViewer.module.css';
 import { ElementItem } from './Elements';
 import { findSelectionPath } from './selectedRange';
@@ -80,7 +80,7 @@ function ASTViewer({
         selectedPath={selectedPath}
         getTooltipLabel={getTooltipLabel}
       />
-      {!hideCopyButton && <CopyButton className="margin--sm" value={model} />}
+      {!hideCopyButton && <CopyButton value={model} />}
     </div>
   );
 }

@@ -17,23 +17,6 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
   return objType(value) === 'Object';
 }
 
-export function jsonStringifyRecursive(obj: unknown): string {
-  const cache = new Set();
-  return JSON.stringify(
-    obj,
-    (key, value: unknown) => {
-      if (typeof value === 'object' && value != null) {
-        if (cache.has(value)) {
-          return;
-        }
-        cache.add(value);
-      }
-      return value;
-    },
-    2,
-  );
-}
-
 export function isESNode(value: object): value is TSESTree.BaseNode {
   return 'type' in value && 'loc' in value && 'range' in value;
 }

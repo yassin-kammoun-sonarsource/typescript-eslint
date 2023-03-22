@@ -1,8 +1,8 @@
 import type { JSONSchema4 } from 'json-schema';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { shallowEqual } from '../lib/shallowEqual';
 import type { PlaygroundSystem, TSConfig } from '../playground/types';
-import { shallowEqual } from '../util/shallowEqual';
 import type { ConfigOptionsType } from './ConfigEditor';
 import ConfigEditor from './ConfigEditor';
 import { parseTSConfig, schemaToConfigOptions, toJson } from './utils';
