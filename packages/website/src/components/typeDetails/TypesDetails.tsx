@@ -11,7 +11,7 @@ import { TypeInfo } from './TypeInfo';
 
 export interface TypesDetailsProps {
   readonly value: ts.Node;
-  readonly program?: ts.Program;
+  readonly typeChecker?: ts.TypeChecker;
   readonly cursorPosition?: number;
   readonly onHoverNode?: OnHoverNodeFn;
 }
@@ -19,7 +19,7 @@ export interface TypesDetailsProps {
 export function TypesDetails({
   cursorPosition,
   value,
-  program,
+  typeChecker,
   onHoverNode,
 }: TypesDetailsProps): JSX.Element {
   const [selectedNode, setSelectedNode] = useState<ts.Node>(value);
@@ -56,7 +56,7 @@ export function TypesDetails({
             <TypeInfo
               onHoverNode={onHoverNode}
               onSelect={setSelectedNode}
-              program={program}
+              typeChecker={typeChecker}
               value={selectedNode}
             />
           </div>

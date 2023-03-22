@@ -8,7 +8,7 @@ import { isRecord, isTSNode } from '../ast/utils';
 
 export interface TypeInfoProps {
   readonly value: ts.Node;
-  readonly program?: ts.Program;
+  readonly typeChecker?: ts.TypeChecker;
   readonly onHoverNode?: OnHoverNodeFn;
   readonly onSelect: (value: ts.Node) => void;
 }
@@ -63,16 +63,15 @@ function TypeGroup(props: TypeGroupProps): JSX.Element {
 
 export function TypeInfo({
   value,
-  program,
+  typeChecker,
   onHoverNode,
   onSelect,
 }: TypeInfoProps): JSX.Element {
   const computed = useMemo(() => {
-    if (!program || !value) {
+    if (!typeChecker || !value) {
       return undefined;
     }
     const info: InfoModel = {};
-    const typeChecker = program.getTypeChecker();
     try {
       const type = typeChecker.getTypeAtLocation(value);
       info.type = type;
@@ -99,7 +98,7 @@ export function TypeInfo({
       info.contextualType = undefined;
     }
     return info;
-  }, [value, program]);
+  }, [value, typeChecker]);
 
   const onSelectNode = useCallback(
     (selection: unknown) => {
@@ -111,8 +110,8 @@ export function TypeInfo({
     [onSelect, onHoverNode, value],
   );
 
-  if (!program || !computed) {
-    return <div>Program not available</div>;
+  if (!typeChecker || !computed) {
+    return <div>TypeChecker not available</div>;
   }
 
   return (

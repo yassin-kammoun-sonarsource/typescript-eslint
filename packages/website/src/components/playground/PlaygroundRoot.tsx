@@ -169,7 +169,7 @@ function PlaygroundRoot(): JSX.Element {
                 <ErrorsViewer value={errors} />
               ) : config.showAST === 'types' && astModel.storedTsAST ? (
                 <TypesDetails
-                  program={astModel.program}
+                  typeChecker={astModel.typeChecker}
                   value={astModel.storedTsAST}
                   onHoverNode={setSelectedRange}
                   cursorPosition={cursorPosition}

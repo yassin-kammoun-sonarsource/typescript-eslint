@@ -12,7 +12,7 @@ export interface UpdateModel {
   storedAST?: TSESTree.Program;
   storedTsAST?: ts.Node;
   storedScope?: ScopeManager;
-  program?: ts.Program;
+  typeChecker?: ts.TypeChecker;
 }
 
 export interface Disposable {
