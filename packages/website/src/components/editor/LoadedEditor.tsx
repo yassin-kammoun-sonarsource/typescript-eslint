@@ -1,11 +1,11 @@
 import { useColorMode } from '@docusaurus/theme-common';
 import Editor from '@monaco-editor/react';
-import type { WebLinterModule } from '@typescript-eslint/website-eslint';
 import type * as Monaco from 'monaco-editor';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { addLibFiles } from '../linter/bridge';
 import { createLinter } from '../linter/createLinter';
+import type { WebLinterModule } from '../linter/types';
 import { isCodeFile } from '../linter/utils';
 import { createModels, determineLanguage } from './actions/createModels';
 import { registerActions } from './actions/registerActions';

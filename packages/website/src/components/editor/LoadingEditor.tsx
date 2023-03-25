@@ -1,10 +1,9 @@
 import { loader } from '@monaco-editor/react';
-import type { WebLinterModule } from '@typescript-eslint/website-eslint';
 import type * as Monaco from 'monaco-editor';
 import React, { useEffect, useRef, useState } from 'react';
 
 import Loader from '../layout/Loader';
-import type { UpdateModel } from '../linter/types';
+import type { UpdateModel, WebLinterModule } from '../linter/types';
 import type { ErrorGroup, PlaygroundSystem } from '../playground/types';
 import LoadedEditor from './LoadedEditor';
 import { loadWebLinterModule } from './loadWebLinterModule';

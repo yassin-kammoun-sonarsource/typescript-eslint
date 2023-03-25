@@ -13,9 +13,8 @@ declare module 'monaco-editor/esm/vs/editor/editor.api' {
 }
 
 declare global {
-  type WindowRequireCb = (...arg: unknown[]) => void;
   interface WindowRequire {
-    (files: string[], cb: WindowRequireCb): void;
+    <T>(files: string[], cb: (...arg: T) => void): void;
     config: (arg: {
       paths?: Record<string, string>;
       ignoreDuplicateModules?: string[];

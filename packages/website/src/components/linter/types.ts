@@ -1,12 +1,11 @@
 import type { configs, rules } from '@typescript-eslint/eslint-plugin';
-import type { ScopeManager } from '@typescript-eslint/scope-manager';
-import type { analyze } from '@typescript-eslint/scope-manager/use-at-your-own-risk/analyze';
-import type { astConverter } from '@typescript-eslint/typescript-estree/use-at-your-own-risk/ast-converter';
+import type { analyze, ScopeManager } from '@typescript-eslint/scope-manager';
+import type { astConverter } from '@typescript-eslint/typescript-estree/use-at-your-own-risk';
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
 import type esquery from 'esquery';
 import type * as ts from 'typescript';
 
-export type { ParseSettings } from '@typescript-eslint/typescript-estree/use-at-your-own-risk/parseSettings';
+export type { ParseSettings } from '@typescript-eslint/typescript-estree/use-at-your-own-risk';
 
 export interface UpdateModel {
   storedAST?: TSESTree.Program;

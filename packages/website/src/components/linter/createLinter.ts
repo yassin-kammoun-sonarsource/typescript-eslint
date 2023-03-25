@@ -1,14 +1,13 @@
 import type { TSESLint } from '@typescript-eslint/utils';
-import type { WebLinterModule } from '@typescript-eslint/website-eslint';
 import type * as Monaco from 'monaco-editor';
 import type * as ts from 'typescript';
 
 import { parseESLintRC, parseTSConfig } from '../config/utils';
-import type { PlaygroundSystem } from '../playground/types';
 import { debounce } from '../lib/debounce';
+import type { PlaygroundSystem } from '../playground/types';
 import { defaultEslintConfig, PARSER_NAME } from './config';
 import { createParser } from './createParser';
-import type { Disposable, UpdateModel } from './types';
+import type { Disposable, UpdateModel, WebLinterModule } from './types';
 import {
   createCompilerOptions,
   isCodeFile,
