@@ -34,11 +34,9 @@ export default function LoadedEditor({
   const { colorMode } = useColorMode();
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor>();
   const [, setDecorations] = useState<string[]>([]);
-  const [currentFile, setCurrentFile] = useState(() => ({
-    path: activeFile,
-    language: determineLanguage(activeFile),
-    value: system.readFile('/' + activeFile),
-  }));
+  const [defaultValue] = useState(
+    () => system.readFile('/' + activeFile) ?? '',
+  );
 
   useEffect(() => {
     const model = monaco.editor.getModel(monaco.Uri.file(activeFile));
@@ -72,85 +70,77 @@ export default function LoadedEditor({
 
     const activeUri = monaco.Uri.file(activeFile);
     let model = monaco.editor.getModel(activeUri);
-    if (currentFile.path !== activeUri.path) {
-      if (!model) {
-        let code: string | undefined = '';
-        if (isCodeFile(activeUri.path)) {
-          const codeModel = monaco.editor
-            .getModels()
-            .find(m => isCodeFile(m.uri.path));
-          if (codeModel) {
-            code = codeModel.getValue();
-            codeModel?.dispose();
-          }
-          system.writeFile(activeUri.path, code ?? '');
-        } else {
-          code = system.readFile(activeUri.path);
+    if (!model) {
+      console.log('[Editor] creating new model', activeUri.path);
+      let code: string | undefined = '';
+      if (isCodeFile(activeUri.path)) {
+        const codeModel = monaco.editor
+          .getModels()
+          .find(m => isCodeFile(m.uri.path));
+        if (codeModel) {
+          code = codeModel.getValue();
+          console.log('[Editor] destroying model', codeModel.uri.path);
+          codeModel.dispose();
         }
-        model = monaco.editor.createModel(
-          code ?? '',
-          determineLanguage(activeUri.path),
-          activeUri,
-        );
-        model.updateOptions({ tabSize: 2, insertSpaces: true });
+        system.writeFile(activeUri.path, code ?? '');
+      } else {
+        code = system.readFile(activeUri.path);
       }
+      model = monaco.editor.createModel(
+        code ?? '',
+        determineLanguage(activeUri.path),
+        activeUri,
+      );
+      model.updateOptions({ tabSize: 2, insertSpaces: true });
+    }
 
-      setCurrentFile({
-        path: activeFile,
-        language: determineLanguage(activeFile),
-        value: system.readFile(activeUri.path),
-      });
-
+    if (!model.isAttachedToEditor()) {
+      console.log('[Editor] attaching model', activeUri.path);
       editorRef.current.setModel(model);
     }
 
-    monaco.editor.setModelLanguage(model!, determineLanguage(activeUri.path));
-  }, [system, currentFile.path, monaco, editorRef, activeFile]);
+    monaco.editor.setModelLanguage(model, determineLanguage(activeUri.path));
+  }, [system, monaco, editorRef, activeFile]);
 
-  const onEditorDidMount = (
+  const onEditorDidMount = async (
     editor: Monaco.editor.IStandaloneCodeEditor,
-  ): void => {
+  ): Promise<void> => {
     editorRef.current = editor;
 
-    addLibFiles(system, monaco)
-      .then(() => {
-        window.esquery = utils.esquery;
-        // @ts-expect-error: TODO: remove me, this is only used for debugging
-        window.system = system;
+    await addLibFiles(system, monaco);
 
-        const globalActions = new Map<string, Map<string, LintCodeAction[]>>();
-        const linter = createLinter(monaco, onUpdate, system, utils);
-        registerDefaults(monaco, linter, system);
-        createModels(monaco, editor, system);
-        registerActions(monaco, editor, linter);
-        registerEvents(
-          monaco,
-          editor,
-          system,
-          onValidate,
-          onCursorChange,
-          globalActions,
-        );
-        registerLinter(monaco, editor, linter, globalActions);
+    window.esquery = utils.esquery;
+    // @ts-expect-error: TODO: remove me, this is only used for debugging
+    window.system = system;
 
-        monaco.editor.setModelLanguage(
-          editor.getModel()!,
-          determineLanguage(currentFile.path),
-        );
+    const globalActions = new Map<string, Map<string, LintCodeAction[]>>();
+    const linter = createLinter(monaco, onUpdate, system, utils);
+    registerDefaults(monaco, linter, system);
+    createModels(monaco, editor, system);
+    registerActions(monaco, editor, linter);
+    registerEvents(
+      monaco,
+      editor,
+      system,
+      onValidate,
+      onCursorChange,
+      globalActions,
+    );
+    registerLinter(monaco, editor, linter, globalActions);
 
-        linter.lintAllFiles();
-      })
-      .catch(error => {
-        console.error(error);
-      });
+    const model = editor.getModel()!;
+    model.updateOptions({ tabSize: 2, insertSpaces: true });
+    monaco.editor.setModelLanguage(model, determineLanguage(activeFile));
+
+    linter.lintAllFiles();
   };
 
   return (
     <Editor
       theme={colorMode === 'dark' ? 'vs-dark' : 'vs-light'}
-      defaultPath={currentFile.path}
+      defaultPath={activeFile}
       defaultLanguage="typescript"
-      defaultValue={currentFile.value}
+      defaultValue={defaultValue}
       onMount={onEditorDidMount}
       options={defaultEditorOptions}
     />
