@@ -102,37 +102,37 @@ export default function LoadedEditor({
     monaco.editor.setModelLanguage(model, determineLanguage(activeUri.path));
   }, [system, monaco, editorRef, activeFile]);
 
-  const onEditorDidMount = async (
+  const onEditorDidMount = (
     editor: Monaco.editor.IStandaloneCodeEditor,
-  ): Promise<void> => {
+  ): void => {
     editorRef.current = editor;
-
-    await addLibFiles(system, monaco);
-
     window.esquery = utils.esquery;
     // @ts-expect-error: TODO: remove me, this is only used for debugging
     window.system = system;
 
-    const globalActions = new Map<string, Map<string, LintCodeAction[]>>();
-    const linter = createLinter(monaco, onUpdate, system, utils);
-    registerDefaults(monaco, linter, system);
-    createModels(monaco, editor, system);
-    registerActions(monaco, editor, linter);
-    registerEvents(
-      monaco,
-      editor,
-      system,
-      onValidate,
-      onCursorChange,
-      globalActions,
-    );
-    registerLinter(monaco, editor, linter, globalActions);
+    // we want to ignore this error
+    void addLibFiles(system, monaco).then(() => {
+      const globalActions = new Map<string, Map<string, LintCodeAction[]>>();
+      const linter = createLinter(monaco, onUpdate, system, utils);
+      registerDefaults(monaco, linter, system);
+      createModels(monaco, editor, system);
+      registerActions(monaco, editor, linter);
+      registerEvents(
+        monaco,
+        editor,
+        system,
+        onValidate,
+        onCursorChange,
+        globalActions,
+      );
+      registerLinter(monaco, editor, linter, globalActions);
 
-    const model = editor.getModel()!;
-    model.updateOptions({ tabSize: 2, insertSpaces: true });
-    monaco.editor.setModelLanguage(model, determineLanguage(activeFile));
+      const model = editor.getModel()!;
+      model.updateOptions({ tabSize: 2, insertSpaces: true });
+      monaco.editor.setModelLanguage(model, determineLanguage(activeFile));
 
-    linter.lintAllFiles();
+      linter.lintAllFiles();
+    });
   };
 
   return (
