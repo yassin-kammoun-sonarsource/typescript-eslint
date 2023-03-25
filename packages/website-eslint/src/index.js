@@ -1,6 +1,4 @@
 // @ts-check
-/* eslint-disable import/no-amd */
-/* global define */
 
 import eslintJs from '@eslint/js';
 import * as plugin from '@typescript-eslint/eslint-plugin';
@@ -10,24 +8,22 @@ import { visitorKeys } from '@typescript-eslint/visitor-keys';
 import { Linter } from 'eslint';
 import esquery from 'esquery';
 
-// @ts-expect-error define is not defined
-define(['exports', 'vs/language/typescript/tsWorker'], function (exports) {
-  exports.analyze = analyze;
-  exports.visitorKeys = visitorKeys;
-  exports.astConverter = astConverter;
-  exports.esquery = esquery;
-  exports.Linter = Linter;
-  exports.rules = plugin.rules;
+// don't change exports to export *
+exports.analyze = analyze;
+exports.visitorKeys = visitorKeys;
+exports.astConverter = astConverter;
+exports.esquery = esquery;
+exports.Linter = Linter;
+exports.rules = plugin.rules;
 
-  /** @type {Record<string, unknown>} */
-  const configs = {};
+/** @type {Record<string, unknown>} */
+const configs = {};
 
-  for (const [key, value] of Object.entries(eslintJs.configs)) {
-    configs[`eslint:${key}`] = value;
-  }
-  for (const [key, value] of Object.entries(plugin.configs)) {
-    configs[`plugin:@typescript-eslint/${key}`] = value;
-  }
+for (const [key, value] of Object.entries(eslintJs.configs)) {
+  configs[`eslint:${key}`] = value;
+}
+for (const [key, value] of Object.entries(plugin.configs)) {
+  configs[`plugin:@typescript-eslint/${key}`] = value;
+}
 
-  exports.configs = configs;
-});
+exports.configs = configs;
