@@ -1,16 +1,27 @@
-import { isESNode, isRecord, isTSNode } from './utils';
+import type { ParentNodeType } from './types';
+import { filterProperties, isESNode, isRecord, isTSNode } from './utils';
 
-function isInRange(offset: number, range: [number, number]): boolean {
-  return offset > range[0] && offset <= range[1];
+function isInRange(offset: number, value: object): boolean {
+  const range = getRangeFromNode(value);
+  return !!range && offset > range[0] && offset <= range[1];
+}
+
+function geNodeType(value: unknown): ParentNodeType {
+  if (isRecord(value)) {
+    return isESNode(value) ? 'esNode' : isTSNode(value) ? 'tsNode' : undefined;
+  }
+  return undefined;
+}
+
+function isIterable(key: string, value: unknown): boolean {
+  return filterProperties(key, value, geNodeType(value));
 }
 
 function getRangeFromNode(value: object): null | [number, number] {
   if (isESNode(value)) {
     return value.range;
   } else if (isTSNode(value)) {
-    if (value.kind >= window.ts.SyntaxKind.FirstNode) {
-      return [value.pos, value.end];
-    }
+    return [value.pos, value.end];
   }
   return null;
 }
@@ -26,14 +37,13 @@ function findInObject(
   const children = Object.entries(iter);
   for (const [name, child] of children) {
     // we do not want to select parents in case if we do filter with esquery
-    if (visited.has(child) || name === 'parent') {
+    if (visited.has(child) || name === 'parent' || !isIterable(name, child)) {
       continue;
     }
     visited.add(iter);
 
     if (isRecord(child)) {
-      const range = getRangeFromNode(child);
-      if (range && isInRange(cursorPosition, range)) {
+      if (isInRange(cursorPosition, child)) {
         return {
           key: [name],
           value: child,
@@ -44,8 +54,7 @@ function findInObject(
         const arrayChild: unknown = child[index];
         // typescript array like elements have other iterable items
         if (typeof index === 'number' && isRecord(arrayChild)) {
-          const range = getRangeFromNode(arrayChild);
-          if (range && isInRange(cursorPosition, range)) {
+          if (isInRange(cursorPosition, arrayChild)) {
             return {
               key: [name, String(index)],
               value: arrayChild,
