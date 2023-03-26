@@ -1,5 +1,5 @@
 import * as lzString from 'lz-string';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { toJson } from '../config/utils';
 import { hasOwnProperty } from '../lib/has-own-property';
@@ -188,39 +188,25 @@ function useHashState(
     ...parseStateFromUrl(getHash()),
   }));
 
-  useEffect(() => {
-    const hash = getHash();
-    console.info('[State] hash change detected', hash);
+  const updateState = useCallback((cfg: Partial<ConfigModel>) => {
+    console.info('[State] updating config diff', cfg);
 
-    const newState = parseStateFromUrl(hash);
-    if (newState) {
-      setState(oldState => ({ ...oldState, ...newState }));
-    }
-  }, []);
-
-  const updateState = useCallback(
-    (cfg: Partial<ConfigModel>) => {
-      console.info('[State] updating config diff', cfg);
-
-      const newState = { ...state, ...cfg };
-
+    setState(oldState => {
+      const newState = { ...oldState, ...cfg };
       const newHash = writeStateToUrl(newState);
-      if (getHash() !== newHash) {
-        writeStateToLocalStorage(newState);
-        setState(newState);
 
-        const url = `${window.location.pathname}#${newHash}`;
+      writeStateToLocalStorage(newState);
+      const url = `${window.location.pathname}#${newHash}`;
 
-        if (cfg.ts) {
-          window.location.href = url;
-          window.location.reload();
-        } else {
-          window.history.replaceState(undefined, document.title, url);
-        }
+      if (cfg.ts) {
+        window.location.href = url;
+        window.location.reload();
+      } else {
+        window.history.replaceState(undefined, document.title, url);
       }
-    },
-    [state],
-  );
+      return newState;
+    });
+  }, []);
 
   return [state, updateState];
 }

@@ -21,7 +21,7 @@ export function createModels(
   editor: Monaco.editor.IStandaloneCodeEditor,
   system: PlaygroundSystem,
 ): void {
-  system.watchDirectory('/', fileName => {
+  system.watchFile('/*', fileName => {
     if (editor.hasTextFocus()) {
       return;
     }

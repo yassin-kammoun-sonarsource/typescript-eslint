@@ -32,6 +32,6 @@ export interface ConfigModel {
 }
 
 export type PlaygroundSystem = ts.System &
-  Required<Pick<ts.System, 'watchFile' | 'watchDirectory' | 'deleteFile'>> & {
+  Required<Pick<ts.System, 'watchFile' | 'deleteFile'>> & {
     removeFile: (fileName: string) => void;
   };

@@ -3,7 +3,6 @@ import type * as Monaco from 'monaco-editor';
 import type * as ts from 'typescript';
 
 import { parseESLintRC, parseTSConfig } from '../config/utils';
-import { debounce } from '../lib/debounce';
 import type { PlaygroundSystem } from '../playground/types';
 import { defaultEslintConfig, PARSER_NAME } from './config';
 import { createParser } from './createParser';
@@ -175,9 +174,9 @@ export function createLinter(
   };
 
   // Trigger linting 500ms after file changed
-  system.watchDirectory(
-    '/',
-    debounce(fileName => {
+  system.watchFile(
+    '/*',
+    fileName => {
       if (isCodeFile(fileName)) {
         triggerLint(fileName);
       } else if (isEslintrcFile(fileName)) {
@@ -187,7 +186,8 @@ export function createLinter(
         applyTSConfig(fileName);
         lintAllFiles();
       }
-    }, 500),
+    },
+    500,
   );
 
   applyEslintConfig('/.eslintrc');

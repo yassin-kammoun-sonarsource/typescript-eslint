@@ -10,10 +10,9 @@ import ConfigTypeScript from '../config/ConfigTypeScript';
 import LoadingEditor from '../editor/LoadingEditor';
 import useHashState from '../hooks/useHashState';
 import EditorTabs from '../layout/EditorTabs';
-import { debounce } from '../lib/debounce';
 import { createFileSystem } from '../linter/bridge';
 import type { UpdateModel } from '../linter/types';
-import { isCodeFile } from '../linter/utils';
+import { isCodeFile, isEslintrcFile, isTSConfigFile } from '../linter/utils';
 import { TypesDetails } from '../typeDetails/TypesDetails';
 import { defaultConfig, detailTabs } from './config';
 import { ErrorsViewer } from './ErrorsViewer';
@@ -43,31 +42,23 @@ function PlaygroundRoot(): JSX.Element {
   const windowSize = useWindowSize();
 
   useEffect(() => {
-    const dispose = system.watchDirectory(
-      '/',
-      debounce(fileName => {
+    const dispose = system.watchFile(
+      '/*',
+      fileName => {
         if (isCodeFile(fileName)) {
-          const code = system.readFile(fileName);
-          if (config.code !== code) {
-            setConfig({ code });
-          }
-        } else if (fileName === '/.eslintrc') {
-          const eslintrc = system.readFile(fileName);
-          if (config.eslintrc !== eslintrc) {
-            setConfig({ eslintrc });
-          }
-        } else if (fileName === '/tsconfig.json') {
-          const tsconfig = system.readFile(fileName);
-          if (config.tsconfig !== tsconfig) {
-            setConfig({ tsconfig });
-          }
+          setConfig({ code: system.readFile(fileName) });
+        } else if (isEslintrcFile(fileName)) {
+          setConfig({ eslintrc: system.readFile(fileName) });
+        } else if (isTSConfigFile(fileName)) {
+          setConfig({ tsconfig: system.readFile(fileName) });
         }
-      }, 500),
+      },
+      500,
     );
     return () => {
       dispose.close();
     };
-  }, [config, setConfig, system]);
+  }, [setConfig, system]);
 
   useEffect(() => {
     const newFile = `file.${config.fileType}`;

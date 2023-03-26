@@ -25,36 +25,29 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
   files.set(`/tsconfig.json`, config.tsconfig);
   files.set(`/file.${config.fileType}`, config.code);
 
-  const fileWatcherCallbacks = new Map<string, Set<ts.FileWatcherCallback>>();
-  const directoryWatcherCallback = new Set<ts.DirectoryWatcherCallback>();
+  const fileWatcherCallbacks = new Map<RegExp, Set<ts.FileWatcherCallback>>();
 
   const system = createSystem(files) as PlaygroundSystem;
 
   system.watchFile = (path, callback, pollingInterval): ts.FileWatcher => {
     const cb = pollingInterval ? debounce(callback, pollingInterval) : callback;
 
-    let handle = fileWatcherCallbacks.get(path);
+    const escapedPath = path.replace(/\./g, '\\.').replace(/\*/g, '[^/]+');
+    const expPath = new RegExp(`^${escapedPath}$`, '');
+
+    let handle = fileWatcherCallbacks.get(expPath);
     if (!handle) {
       handle = new Set();
-      fileWatcherCallbacks.set(path, handle);
+      fileWatcherCallbacks.set(expPath, handle);
     }
     handle.add(cb);
 
     return {
       close: (): void => {
-        const handle = fileWatcherCallbacks.get(path);
+        const handle = fileWatcherCallbacks.get(expPath);
         if (handle) {
           handle.delete(cb);
         }
-      },
-    };
-  };
-
-  system.watchDirectory = (path, callback): ts.FileWatcher => {
-    directoryWatcherCallback.add(callback);
-    return {
-      close: (): void => {
-        directoryWatcherCallback.delete(callback);
       },
     };
   };
@@ -63,10 +56,11 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
     path: string,
     type: ts.FileWatcherEventKind,
   ): void => {
-    fileWatcherCallbacks.get(path)?.forEach(item => item(path, type));
-    if (type !== 1) {
-      directoryWatcherCallback.forEach(item => item(path));
-    }
+    fileWatcherCallbacks.forEach((callbacks, key) => {
+      if (key.test(path)) {
+        callbacks.forEach(cb => cb(path, type));
+      }
+    });
   };
 
   system.deleteFile = (fileName): void => {
