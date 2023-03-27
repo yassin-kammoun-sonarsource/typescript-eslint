@@ -18,7 +18,7 @@ import { createMarkdown, createMarkdownParams } from './lib/markdown';
 import styles from './playground.module.css';
 import type { ConfigModel } from './types';
 
-interface OptionsSelectorParams {
+export interface OptionsSelectorParams {
   readonly config: ConfigModel;
   readonly enableScrolling: boolean;
   readonly setEnableScrolling: (checked: boolean) => void;
@@ -31,8 +31,6 @@ function OptionsSelectorContent({
   enableScrolling,
   setEnableScrolling,
 }: OptionsSelectorParams): JSX.Element {
-  const windowSize = useWindowSize();
-
   const [copyLink, copyLinkToClipboard] = useClipboard(() =>
     document.location.toString(),
   );
@@ -107,22 +105,6 @@ function OptionsSelectorContent({
           <IconExternalLink width="13.5" height="13.5" />
         </ActionLabel>
       </Expander>
-      {windowSize !== 'mobile' && (
-        <Expander label="Debug">
-          <InputLabel name="vfs instance">
-            <code>window.system</code>
-          </InputLabel>
-          <InputLabel name="monaco instance">
-            <code>window.monaco</code>
-          </InputLabel>
-          <InputLabel name="typescript">
-            <code>window.ts</code>
-          </InputLabel>
-          <InputLabel name="esquery">
-            <code>window.esquery</code>
-          </InputLabel>
-        </Expander>
-      )}
     </>
   );
 }
