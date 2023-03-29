@@ -11,10 +11,12 @@ export async function addLibFiles(
 ): Promise<void> {
   const worker = await monaco.languages.typescript.getTypeScriptWorker();
   const workerInstance = await worker();
-  const libs = await workerInstance.getLibFiles();
-  if (libs) {
-    for (const [name, content] of Object.entries(libs)) {
-      system.writeFile('/' + name, content);
+  if (workerInstance.getLibFiles) {
+    const libs = await workerInstance.getLibFiles();
+    if (libs) {
+      for (const [name, content] of Object.entries(libs)) {
+        system.writeFile('/' + name, content);
+      }
     }
   }
 }
