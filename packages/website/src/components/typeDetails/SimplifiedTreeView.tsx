@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { useCallback, useMemo } from 'react';
 import type * as ts from 'typescript';
 
@@ -38,30 +39,28 @@ function SimplifiedItem({
   );
 
   return (
-    <div className={styles.expand}>
+    <div className={styles.nonExpand}>
       <span className={selectedNode === value ? styles.selected : ''}>
         <PropertyName
-          propName={tsEnumValue('SyntaxKind', value.kind)}
+          value={tsEnumValue('SyntaxKind', value.kind)}
+          className={styles.propName}
           onHover={onHover}
-          onClick={(e): void => {
-            e.preventDefault();
+          onClick={(): void => {
             onSelect(value);
           }}
         />
       </span>
 
-      <div className={styles.subList}>
-        {items.map((item, index) => {
-          return (
-            <SimplifiedTreeView
-              onHoverNode={onHoverNode}
-              selectedNode={selectedNode}
-              value={item}
-              onSelect={onSelect}
-              key={index.toString()}
-            />
-          );
-        })}
+      <div className={clsx(styles.subList, 'padding-left--md')}>
+        {items.map((item, index) => (
+          <SimplifiedItem
+            onHoverNode={onHoverNode}
+            selectedNode={selectedNode}
+            value={item}
+            onSelect={onSelect}
+            key={index.toString()}
+          />
+        ))}
       </div>
     </div>
   );
@@ -71,7 +70,7 @@ export function SimplifiedTreeView(
   params: SimplifiedTreeViewProps,
 ): JSX.Element {
   return (
-    <div className={styles.list}>
+    <div className={clsx(styles.list, 'padding-left--sm')}>
       <SimplifiedItem {...params} />
     </div>
   );
