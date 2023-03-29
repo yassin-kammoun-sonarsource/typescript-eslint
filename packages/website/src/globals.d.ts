@@ -1,20 +1,13 @@
 import type esquery from 'esquery';
-import type * as TSType from 'typescript';
-
-declare module 'monaco-editor/esm/vs/editor/editor.api' {
-  namespace languages.typescript {
-    export interface TypeScriptWorker {
-      /**
-       * https://github.com/microsoft/TypeScript-Website/blob/246798df5013036bd9b4389932b642c20ab35deb/packages/playground-worker/types.d.ts#L48
-       */
-      getLibFiles(): Promise<Record<string, string>>;
-    }
-  }
-}
+import type * as ts from 'typescript';
 
 declare global {
   interface WindowRequire {
-    <T>(files: string[], cb: (...arg: T) => void): void;
+    <T extends unknown[]>(
+      files: string[],
+      success?: (...arg: T) => void,
+      error?: (e: Error) => void,
+    ): void;
     config: (arg: {
       paths?: Record<string, string>;
       ignoreDuplicateModules?: string[];
@@ -22,7 +15,7 @@ declare global {
   }
 
   interface Window {
-    ts: typeof TSType;
+    ts: typeof ts;
     require: WindowRequire;
     esquery: typeof esquery;
   }
