@@ -1,6 +1,6 @@
 import { toJson } from '../config/utils';
 import versions from './packageVersions.json';
-import type { ConfigModel } from './types';
+import type { ConfigFileType, ConfigModel, ConfigShowAst } from './types';
 
 export const defaultConfig: ConfigModel = {
   ts: process.env.TS_VERSION!,
@@ -26,15 +26,15 @@ if (!tsVersions.includes(process.env.TS_VERSION!)) {
 
 // export const esTsVersions: string[] = ['latest', ...versions.eslintPlugin];
 
-export const detailTabs = [
-  { value: false as const, label: 'Errors' },
-  { value: 'es' as const, label: 'ESTree' },
-  { value: 'ts' as const, label: 'TypeScript' },
-  { value: 'scope' as const, label: 'Scope' },
-  { value: 'types' as const, label: 'Types' },
+export const detailTabs: { value: ConfigShowAst; label: string }[] = [
+  { value: false, label: 'Errors' },
+  { value: 'es', label: 'ESTree' },
+  { value: 'ts', label: 'TypeScript' },
+  { value: 'scope', label: 'Scope' },
+  { value: 'types', label: 'Types' },
 ];
 
-export const fileTypes = [
+export const fileTypes: ConfigFileType[] = [
   'ts',
   'tsx',
   'js',
@@ -44,4 +44,4 @@ export const fileTypes = [
   'mjs',
   'cts',
   'mts',
-] as const;
+];

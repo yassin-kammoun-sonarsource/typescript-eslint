@@ -1,21 +1,24 @@
-import * as lzString from 'lz-string';
+import * as lz from 'lz-string';
 import { useCallback, useState } from 'react';
 
 import { toJson } from '../config/utils';
 import { hasOwnProperty } from '../lib/has-own-property';
-import type { ConfigModel } from '../playground/types';
+import { fileTypes } from '../playground/config';
+import type {
+  ConfigFileType,
+  ConfigModel,
+  ConfigShowAst,
+} from '../playground/types';
 
 function writeQueryParam(value: string | null): string {
-  return (value && lzString.compressToEncodedURIComponent(value)) || '';
+  return (value && lz.compressToEncodedURIComponent(value)) ?? '';
 }
 
 function readQueryParam(value: string | null, fallback: string): string {
-  return (
-    (value && lzString.decompressFromEncodedURIComponent(value)) || fallback
-  );
+  return (value && lz.decompressFromEncodedURIComponent(value)) ?? fallback;
 }
 
-function readShowAST(value: string | null): ConfigModel['showAST'] {
+function readShowAST(value: string | null): ConfigShowAst {
   switch (value) {
     case 'es':
     case 'ts':
@@ -26,14 +29,9 @@ function readShowAST(value: string | null): ConfigModel['showAST'] {
   return value ? 'es' : false;
 }
 
-function readFileType(value: string | null): ConfigModel['fileType'] {
-  switch (value) {
-    case 'ts':
-    case 'tsx':
-    case 'd.ts':
-    case 'js':
-    case 'jsx':
-      return value;
+function readFileType(value: string | null): ConfigFileType {
+  if (value && (fileTypes as string[]).includes(value)) {
+    return value as ConfigFileType;
   }
   return 'ts';
 }
@@ -114,7 +112,7 @@ const writeStateToUrl = (newState: ConfigModel): string | undefined => {
     if (newState.showAST) {
       searchParams.set('showAST', newState.showAST);
     }
-    if (newState.fileType !== 'ts') {
+    if (newState.fileType && newState.fileType !== 'ts') {
       searchParams.set('fileType', newState.fileType);
     }
     searchParams.set('code', writeQueryParam(newState.code));
@@ -175,17 +173,13 @@ const writeStateToLocalStorage = (newState: ConfigModel): void => {
   window.localStorage.setItem('config', JSON.stringify(config));
 };
 
-const getHash = (): string => {
-  return window.location.hash.slice(1);
-};
-
 function useHashState(
   initialState: ConfigModel,
 ): [ConfigModel, (cfg: Partial<ConfigModel>) => void] {
   const [state, setState] = useState<ConfigModel>(() => ({
     ...initialState,
     ...retrieveStateFromLocalStorage(),
-    ...parseStateFromUrl(getHash()),
+    ...parseStateFromUrl(window.location.hash.slice(1)),
   }));
 
   const updateState = useCallback((cfg: Partial<ConfigModel>) => {
