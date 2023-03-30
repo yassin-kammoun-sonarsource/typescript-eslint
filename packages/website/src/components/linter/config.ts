@@ -1,32 +1,31 @@
+import type { ParseSettings } from '@typescript-eslint/typescript-estree/use-at-your-own-risk';
 import type { TSESLint } from '@typescript-eslint/utils';
 
-import type { ParseSettings } from './types';
-
 export const defaultParseSettings: ParseSettings = {
+  allowInvalidAST: false,
   code: '',
   codeFullText: '',
   comment: true,
   comments: [],
-  DEPRECATED__createDefaultProgram: false,
   debugLevel: new Set(),
+  DEPRECATED__createDefaultProgram: false,
+  errorOnTypeScriptSyntacticAndSemanticIssues: false,
   errorOnUnknownASTType: false,
+  EXPERIMENTAL_useSourceOfProjectReferenceRedirect: false,
   extraFileExtensions: [],
   filePath: '',
   jsx: true,
   loc: true,
   log: console.log,
   preserveNodeMaps: true,
+  programs: null,
   projects: [],
   range: true,
-  tokens: [],
-  tsconfigRootDir: '/',
-  tsconfigMatchCache: new Map(),
-  errorOnTypeScriptSyntacticAndSemanticIssues: false,
-  EXPERIMENTAL_useSourceOfProjectReferenceRedirect: false,
   singleRun: false,
-  programs: null,
   suppressDeprecatedPropertyWarnings: false,
-  allowInvalidAST: false,
+  tokens: [],
+  tsconfigMatchCache: new Map(),
+  tsconfigRootDir: '/',
 };
 
 export const PARSER_NAME = '@typescript-eslint/parser';
