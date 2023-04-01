@@ -71,6 +71,7 @@
     "@types/marked": "*",
     "@types/natural-compare-lite": "^1.4.0",
     "@types/prettier": "*",
+    "@typescript-eslint/rule-tester": "5.57.0",
     "cross-fetch": "*",
     "json-schema": "*",
     "markdown-table": "^3.0.2",
