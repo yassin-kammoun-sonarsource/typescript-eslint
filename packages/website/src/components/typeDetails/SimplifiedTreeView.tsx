@@ -4,7 +4,7 @@ import type * as ts from 'typescript';
 
 import styles from '../ast/ASTViewer.module.css';
 import PropertyName from '../ast/PropertyName';
-import { tsEnumValue } from '../ast/tsUtils';
+import { tsEnumToString } from '../ast/tsUtils';
 import type { OnHoverNodeFn } from '../ast/types';
 import { getRange, isTSNode } from '../ast/utils';
 
@@ -42,7 +42,7 @@ function SimplifiedItem({
     <div className={styles.nonExpand}>
       <span className={selectedNode === value ? styles.selected : ''}>
         <PropertyName
-          value={tsEnumValue('SyntaxKind', value.kind)}
+          value={tsEnumToString('SyntaxKind', value.kind)}
           className={styles.propName}
           onHover={onHover}
           onClick={(): void => {
