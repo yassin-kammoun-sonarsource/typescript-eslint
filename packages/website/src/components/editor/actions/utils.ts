@@ -1,7 +1,7 @@
 import type { TSESLint } from '@typescript-eslint/utils';
 import type * as Monaco from 'monaco-editor';
 
-import { toJson } from '../../config/utils';
+import { toJson } from '../../lib/json';
 
 export interface LintCodeAction {
   message: string;

@@ -28,6 +28,7 @@ export default function LoadedEditor({
   onUpdate,
   onCursorChange,
   monaco,
+  className,
   utils,
   selectedRange,
 }: LoadedEditorProps): JSX.Element {
@@ -137,6 +138,7 @@ export default function LoadedEditor({
 
   return (
     <Editor
+      className={className}
       theme={colorMode === 'dark' ? 'vs-dark' : 'vs-light'}
       defaultPath={activeFile}
       defaultLanguage="typescript"

@@ -1,6 +1,6 @@
 import { useWindowSize } from '@docusaurus/theme-common';
 import type * as ESQuery from 'esquery';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 
@@ -27,11 +27,11 @@ function Playground(): JSX.Element {
   const [system] = useState<PlaygroundSystem>(() => createFileSystem(config));
   const [activeFile, setFileName] = useState(`file${config.fileType}`);
   const [editorFile, setEditorFile] = useState(`file${config.fileType}`);
-
+  const [visualEslintRc, setVisualEslintRc] = useState(false);
+  const [visualTSConfig, setVisualTSConfig] = useState(false);
   const [errors, setErrors] = useState<ErrorGroup[]>([]);
   const [astModel, setAstModel] = useState<UpdateModel>();
   const [esQueryFilter, setEsQueryFilter] = useState<ESQuery.Selector>();
-  const [showModal, setShowModal] = useState<string | false>(false);
   const [selectedRange, setSelectedRange] = useState<[number, number]>();
   const [cursorPosition, onCursorChange] = useState<number>();
   const playgroundMenuRef = useRef<ImperativePanelHandle>(null);
@@ -40,6 +40,21 @@ function Playground(): JSX.Element {
   const [enableScrolling, setEnableScrolling] = useState<boolean>(true);
 
   const windowSize = useWindowSize();
+
+  const activeVisualEditor =
+    visualEslintRc && activeFile === '.eslintrc'
+      ? 'eslintrc'
+      : visualTSConfig && activeFile === 'tsconfig.json'
+      ? 'tsconfig'
+      : undefined;
+
+  const onVisualEditor = useCallback((tab: string): void => {
+    if (tab === 'tsconfig.json') {
+      setVisualTSConfig(val => !val);
+    } else if (tab === '.eslintrc') {
+      setVisualEslintRc(val => !val);
+    }
+  }, []);
 
   useEffect(() => {
     const dispose = system.watchFile(
@@ -80,16 +95,6 @@ function Playground(): JSX.Element {
 
   return (
     <>
-      <ConfigEslint
-        system={system}
-        isOpen={showModal === '.eslintrc'}
-        onClose={setShowModal}
-      />
-      <ConfigTypeScript
-        system={system}
-        isOpen={showModal === 'tsconfig.json'}
-        onClose={setShowModal}
-      />
       <PanelGroup
         className={styles.panelGroup}
         autoSaveId="playground-resize"
@@ -124,10 +129,17 @@ function Playground(): JSX.Element {
               tabs={[editorFile, '.eslintrc', 'tsconfig.json']}
               active={activeFile}
               change={setFileName}
-              showModal={setShowModal}
+              showModal={onVisualEditor}
               showVisualEditor={activeFile !== editorFile}
             />
+            {(activeVisualEditor === 'eslintrc' && (
+              <ConfigEslint className={styles.tabCode} system={system} />
+            )) ||
+              (activeVisualEditor === 'tsconfig' && (
+                <ConfigTypeScript className={styles.tabCode} system={system} />
+              ))}
             <LoadingEditor
+              className={activeVisualEditor ? styles.hidden : ''}
               tsVersion={config.ts}
               onUpdate={setAstModel}
               system={system}

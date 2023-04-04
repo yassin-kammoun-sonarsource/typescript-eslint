@@ -35,13 +35,14 @@
   background: var(--ifm-color-emphasis-100);
 }
 
+.searchResult:nth-child(even):hover,
 .searchResult:hover {
   background: var(--ifm-color-emphasis-200);
 }
 
 .searchResultContainer {
   overflow: auto;
-  height: 50vh;
+  height: 10000vh;
 }
 
 .searchResultName {
@@ -57,6 +58,9 @@
   column-gap: 0.5rem;
   margin-bottom: 0.5rem;
   justify-content: flex-end;
+  position: sticky;
+  top: 0;
+  left: 0;
 }
 
 .textarea {

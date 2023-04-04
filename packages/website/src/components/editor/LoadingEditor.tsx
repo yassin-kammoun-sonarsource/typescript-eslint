@@ -9,6 +9,7 @@ import LoadedEditor from './LoadedEditor';
 import { loadWebLinterModule } from './loadWebLinterModule';
 
 export interface LoadingEditorProps {
+  readonly className?: string;
   readonly activeFile: string;
   readonly tsVersion: string;
   readonly system: PlaygroundSystem;
@@ -53,7 +54,12 @@ function LoadingEditor(props: LoadingEditorProps): JSX.Element {
   }
 
   return (
-    <LoadedEditor monaco={monaco.current} utils={utils.current} {...props} />
+    <LoadedEditor
+      className={props.className}
+      monaco={monaco.current}
+      utils={utils.current}
+      {...props}
+    />
   );
 }
 

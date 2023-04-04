@@ -1,15 +1,16 @@
+import { useSystemFile } from '@site/src/components/hooks/useSystemFile';
 import type { JSONSchema4 } from 'json-schema';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { ensureObject } from '../lib/json';
 import { shallowEqual } from '../lib/shallowEqual';
-import type { PlaygroundSystem, TSConfig } from '../types';
+import type { PlaygroundSystem } from '../types';
 import type { ConfigOptionsType } from './ConfigEditor';
 import ConfigEditor from './ConfigEditor';
-import { parseTSConfig, schemaToConfigOptions, toJson } from './utils';
+import { schemaToConfigOptions } from './utils';
 
 export interface ConfigTypeScriptProps {
-  readonly isOpen: boolean;
-  readonly onClose: (isOpen: false) => void;
+  readonly className?: string;
   readonly system: PlaygroundSystem;
 }
 
@@ -26,46 +27,46 @@ function readConfigSchema(system: PlaygroundSystem): ConfigOptionsType[] {
       );
     }
   }
+
   return [];
 }
 
 function ConfigTypeScript({
-  onClose: onCloseProps,
-  isOpen,
+  className,
   system,
 }: ConfigTypeScriptProps): JSX.Element {
-  const [tsConfigOptions, updateOptions] = useState<ConfigOptionsType[]>([]);
-  const [configObject, updateConfigObject] = useState<TSConfig>();
+  const [rawConfig, updateConfigObject] = useSystemFile(
+    system,
+    '/tsconfig.json',
+  );
+  const configObject = useMemo(() => {
+    return ensureObject(rawConfig?.compilerOptions);
+  }, [rawConfig]);
+
+  const [options, updateOptions] = useState<ConfigOptionsType[]>([]);
 
   useEffect(() => {
-    if (isOpen) {
-      updateOptions(readConfigSchema(system));
-      const config = system.readFile('/tsconfig.json');
-      updateConfigObject(parseTSConfig(config));
-    }
-  }, [isOpen, system]);
+    updateOptions(readConfigSchema(system));
+  }, [system]);
 
-  const onClose = useCallback(
+  const onChange = useCallback(
     (newConfig: Record<string, unknown>) => {
-      const cfg = { ...newConfig };
-      if (!shallowEqual(cfg, configObject?.compilerOptions)) {
-        system.writeFile(
-          '/tsconfig.json',
-          toJson({ ...(configObject ?? {}), compilerOptions: cfg }),
-        );
+      if (!shallowEqual(newConfig, ensureObject(rawConfig?.compilerOptions))) {
+        updateConfigObject({
+          ...rawConfig,
+          compilerOptions: newConfig,
+        });
       }
-      onCloseProps(false);
     },
-    [onCloseProps, configObject, system],
+    [rawConfig, updateConfigObject],
   );
 
   return (
     <ConfigEditor
-      header="TypeScript Config"
-      options={tsConfigOptions}
-      values={configObject?.compilerOptions ?? {}}
-      isOpen={isOpen}
-      onClose={onClose}
+      className={className}
+      options={options}
+      values={configObject}
+      onChange={onChange}
     />
   );
 }

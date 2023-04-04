@@ -1,27 +1,28 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { fromJson, toJson } from '../config/utils';
+import { parseJSONObject, toJson } from '../lib/json';
 import type { PlaygroundSystem } from '../types';
 
 function readJsonFile<T>(system: PlaygroundSystem, fileName: string): T {
-  const tsconfig = system.readFile(fileName) ?? '{}';
-  return fromJson(tsconfig) as T;
+  const tsconfig = system.readFile(fileName);
+  return parseJSONObject(tsconfig) as T;
 }
 
-export function useSystemFile<T>(
+export function useSystemFile<T extends Record<string, unknown>>(
   system: PlaygroundSystem,
   fileName: string,
 ): [T, (value: T) => void] {
   const [json, setJson] = useState<T>(() => readJsonFile(system, fileName));
 
   useEffect(() => {
-    system.watchFile(fileName, fileName => {
+    const watcher = system.watchFile(fileName, fileName => {
       try {
         setJson(readJsonFile(system, fileName));
       } catch (e) {
         // suppress errors
       }
     });
+    return () => watcher.close();
   }, [system, fileName]);
 
   const updateJson = useCallback(

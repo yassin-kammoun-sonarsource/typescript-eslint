@@ -1,21 +1,19 @@
 import type { TSESLint } from '@typescript-eslint/utils';
 import type { JSONSchema4 } from 'json-schema';
-import json5 from 'json5';
 
 import { isRecord } from '../ast/utils';
+import { parseJSONObject } from '../lib/json';
 import type { TSConfig } from '../types';
 import type { ConfigOptionsField, ConfigOptionsType } from './ConfigEditor';
 
 export function parseESLintRC(code?: string): TSESLint.Linter.Config {
   if (code) {
     try {
-      const parsed: unknown = json5.parse(code);
-      if (isRecord(parsed)) {
-        if ('rules' in parsed && isRecord(parsed.rules)) {
-          return parsed as TSESLint.Linter.Config;
-        }
-        return { ...parsed, rules: {} };
+      const parsed = parseJSONObject(code);
+      if ('rules' in parsed && isRecord(parsed.rules)) {
+        return parsed as TSESLint.Linter.Config;
       }
+      return { ...parsed, rules: {} };
     } catch (e) {
       console.error(e);
     }
@@ -41,14 +39,6 @@ export function parseTSConfig(code?: string): TSConfig {
     }
   }
   return { compilerOptions: {} };
-}
-
-export function toJson(cfg: unknown): string {
-  return JSON.stringify(cfg, null, 2);
-}
-
-export function fromJson(cfg: string): unknown {
-  return JSON.parse(cfg);
 }
 
 export function schemaItemToField(

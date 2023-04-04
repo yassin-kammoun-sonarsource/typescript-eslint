@@ -1,4 +1,4 @@
-import { toJson } from './config/utils';
+import { toJson } from './lib/json';
 import versions from './packageVersions.json';
 import type { ConfigFileType, ConfigModel, ConfigShowAst } from './types';
 
