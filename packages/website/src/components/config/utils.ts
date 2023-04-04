@@ -3,7 +3,7 @@ import type { JSONSchema4 } from 'json-schema';
 import json5 from 'json5';
 
 import { isRecord } from '../ast/utils';
-import type { TSConfig } from '../playground/types';
+import type { TSConfig } from '../types';
 import type { ConfigOptionsField, ConfigOptionsType } from './ConfigEditor';
 
 export function parseESLintRC(code?: string): TSESLint.Linter.Config {

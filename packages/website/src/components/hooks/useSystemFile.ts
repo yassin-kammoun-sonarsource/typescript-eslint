@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { fromJson, toJson } from '../config/utils';
-import type { PlaygroundSystem } from '../playground/types';
+import type { PlaygroundSystem } from '../types';
 
 function readJsonFile<T>(system: PlaygroundSystem, fileName: string): T {
   const tsconfig = system.readFile(fileName) ?? '{}';

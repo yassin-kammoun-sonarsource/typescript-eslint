@@ -3,7 +3,7 @@ import type { JSONSchema4 } from 'json-schema';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { shallowEqual } from '../lib/shallowEqual';
-import type { PlaygroundSystem } from '../playground/types';
+import type { PlaygroundSystem } from '../types';
 import type { ConfigOptionsType } from './ConfigEditor';
 import ConfigEditor from './ConfigEditor';
 import { parseESLintRC, schemaToConfigOptions, toJson } from './utils';

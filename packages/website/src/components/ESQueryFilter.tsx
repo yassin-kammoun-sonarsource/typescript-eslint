@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import type { Selector } from 'esquery';
 import React, { useEffect, useState } from 'react';
 
-import Text from '../inputs/Text';
+import Text from './inputs/Text';
 import { ErrorViewer } from './ErrorsViewer';
 import styles from './ESQueryFilter.module.css';
 

@@ -3,7 +3,7 @@ import type * as Monaco from 'monaco-editor';
 import type * as ts from 'typescript';
 
 import { debounce } from '../lib/debounce';
-import type { ConfigModel, PlaygroundSystem } from '../playground/types';
+import type { ConfigModel, PlaygroundSystem } from '../types';
 
 export async function addLibFiles(
   system: PlaygroundSystem,
@@ -25,7 +25,7 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
   const files = new Map<string, string>();
   files.set(`/.eslintrc`, config.eslintrc);
   files.set(`/tsconfig.json`, config.tsconfig);
-  files.set(`/file.${config.fileType}`, config.code);
+  files.set(`/file${config.fileType}`, config.code);
 
   const fileWatcherCallbacks = new Map<RegExp, Set<ts.FileWatcherCallback>>();
 

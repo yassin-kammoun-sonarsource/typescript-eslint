@@ -6,13 +6,13 @@ import CopyIcon from '@site/src/icons/copy.svg';
 import IconExternalLink from '@theme/Icon/ExternalLink';
 import React, { useCallback } from 'react';
 
-import { useClipboard } from '../../hooks/useClipboard';
-import Checkbox from '../inputs/Checkbox';
-import Dropdown from '../inputs/Dropdown';
-import Tooltip from '../inputs/Tooltip';
-import ActionLabel from '../layout/ActionLabel';
-import Expander from '../layout/Expander';
-import InputLabel from '../layout/InputLabel';
+import { useClipboard } from '../hooks/useClipboard';
+import Checkbox from './inputs/Checkbox';
+import Dropdown from './inputs/Dropdown';
+import Tooltip from './inputs/Tooltip';
+import ActionLabel from './layout/ActionLabel';
+import Expander from './layout/Expander';
+import InputLabel from './layout/InputLabel';
 import { fileTypes, tsVersions } from './config';
 import { createMarkdown, createMarkdownParams } from './lib/markdown';
 import styles from './playground.module.css';
@@ -68,7 +68,7 @@ function OptionsSelectorContent({
         <InputLabel name="File type">
           <Dropdown
             name="fileType"
-            value={config.fileType ?? 'ts'}
+            value={config.fileType}
             onChange={(fileType): void => setConfig({ fileType })}
             options={fileTypes}
           />

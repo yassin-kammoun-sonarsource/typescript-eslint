@@ -4,8 +4,8 @@ import clsx from 'clsx';
 import type Monaco from 'monaco-editor';
 import React, { useEffect, useState } from 'react';
 
-import type { AlertBlockProps } from '../layout/AlertBlock';
-import AlertBlock from '../layout/AlertBlock';
+import type { AlertBlockProps } from './layout/AlertBlock';
+import AlertBlock from './layout/AlertBlock';
 import styles from './ErrorsViewer.module.css';
 import type { ErrorGroup, ErrorItem } from './types';
 

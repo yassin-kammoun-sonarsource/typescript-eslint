@@ -1,14 +1,11 @@
+import { useHistory } from '@docusaurus/router';
 import * as lz from 'lz-string';
 import { useCallback, useState } from 'react';
 
 import { toJson } from '../config/utils';
 import { hasOwnProperty } from '../lib/has-own-property';
-import { fileTypes } from '../playground/config';
-import type {
-  ConfigFileType,
-  ConfigModel,
-  ConfigShowAst,
-} from '../playground/types';
+import { fileTypes } from '../config';
+import type { ConfigFileType, ConfigModel, ConfigShowAst } from '../types';
 
 function writeQueryParam(value: string | null): string {
   return (value && lz.compressToEncodedURIComponent(value)) ?? '';
@@ -33,7 +30,7 @@ function readFileType(value: string | null): ConfigFileType {
   if (value && (fileTypes as string[]).includes(value)) {
     return value as ConfigFileType;
   }
-  return 'ts';
+  return '.ts';
 }
 
 function toJsonConfig(cfg: unknown, prop: string): string {
@@ -77,17 +74,17 @@ const parseStateFromUrl = (hash: string): Partial<ConfigModel> | undefined => {
       );
     }
 
-    let fileType = readFileType(searchParams.get('fileType'));
-    if (searchParams.get('jsx') === 'true') {
-      fileType = 'tsx';
-    }
+    const fileType =
+      searchParams.get('jsx') === 'true'
+        ? '.tsx'
+        : readFileType(searchParams.get('fileType'));
 
     const code = searchParams.has('code')
       ? readQueryParam(searchParams.get('code'), '')
       : '';
 
     return {
-      ts: searchParams.get('ts') ?? undefined,
+      ts: searchParams.get('ts') ?? process.env.TS_VERSION!,
       showAST: readShowAST(searchParams.get('showAST')),
       sourceType:
         searchParams.get('sourceType') === 'script' ? 'script' : 'module',
@@ -112,7 +109,7 @@ const writeStateToUrl = (newState: ConfigModel): string | undefined => {
     if (newState.showAST) {
       searchParams.set('showAST', newState.showAST);
     }
-    if (newState.fileType && newState.fileType !== 'ts') {
+    if (newState.fileType) {
       searchParams.set('fileType', newState.fileType);
     }
     searchParams.set('code', writeQueryParam(newState.code));
@@ -167,6 +164,7 @@ const retrieveStateFromLocalStorage = (): Partial<ConfigModel> | undefined => {
 const writeStateToLocalStorage = (newState: ConfigModel): void => {
   const config: Partial<ConfigModel> = {
     ts: newState.ts,
+    fileType: newState.fileType,
     sourceType: newState.sourceType,
     showAST: newState.showAST,
   };
@@ -176,31 +174,34 @@ const writeStateToLocalStorage = (newState: ConfigModel): void => {
 function useHashState(
   initialState: ConfigModel,
 ): [ConfigModel, (cfg: Partial<ConfigModel>) => void] {
+  const history = useHistory();
   const [state, setState] = useState<ConfigModel>(() => ({
     ...initialState,
     ...retrieveStateFromLocalStorage(),
     ...parseStateFromUrl(window.location.hash.slice(1)),
   }));
 
-  const updateState = useCallback((cfg: Partial<ConfigModel>) => {
-    console.info('[State] updating config diff', cfg);
+  const updateState = useCallback(
+    (cfg: Partial<ConfigModel>) => {
+      console.info('[State] updating config diff', cfg);
+      setState(oldState => {
+        const newState = { ...oldState, ...cfg };
 
-    setState(oldState => {
-      const newState = { ...oldState, ...cfg };
-      const newHash = writeStateToUrl(newState);
+        writeStateToLocalStorage(newState);
 
-      writeStateToLocalStorage(newState);
-      const url = `${window.location.pathname}#${newHash}`;
+        history.replace({
+          ...history.location,
+          hash: writeStateToUrl(newState),
+        });
 
-      if (cfg.ts) {
-        window.location.href = url;
-        window.location.reload();
-      } else {
-        window.history.replaceState(undefined, document.title, url);
-      }
-      return newState;
-    });
-  }, []);
+        if (cfg.ts) {
+          window.location.reload();
+        }
+        return newState;
+      });
+    },
+    [setState, history],
+  );
 
   return [state, updateState];
 }

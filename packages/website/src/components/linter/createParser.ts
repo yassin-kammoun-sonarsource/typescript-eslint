@@ -4,7 +4,7 @@ import type { ParserOptions } from '@typescript-eslint/types';
 import type { TSESLint } from '@typescript-eslint/utils';
 import type * as ts from 'typescript';
 
-import type { PlaygroundSystem } from '../playground/types';
+import type { PlaygroundSystem } from '../types';
 import { defaultParseSettings } from './config';
 import type { ParseSettings, UpdateModel, WebLinterModule } from './types';
 

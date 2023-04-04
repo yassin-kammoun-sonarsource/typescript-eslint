@@ -1,11 +1,11 @@
-import { toJson } from '../config/utils';
+import { toJson } from './config/utils';
 import versions from './packageVersions.json';
 import type { ConfigFileType, ConfigModel, ConfigShowAst } from './types';
 
 export const defaultConfig: ConfigModel = {
   ts: process.env.TS_VERSION!,
   sourceType: 'module',
-  fileType: 'ts',
+  fileType: '.ts',
   showAST: false,
   tsconfig: toJson({
     compilerOptions: {
@@ -35,13 +35,13 @@ export const detailTabs: { value: ConfigShowAst; label: string }[] = [
 ];
 
 export const fileTypes: ConfigFileType[] = [
-  'ts',
-  'tsx',
-  'js',
-  'jsx',
-  'd.ts',
-  'cjs',
-  'mjs',
-  'cts',
-  'mts',
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.d.ts',
+  '.cjs',
+  '.mjs',
+  '.cts',
+  '.mts',
 ];

@@ -1,4 +1,4 @@
-import { parseESLintRC } from '../../config/utils';
+import { parseESLintRC } from '../config/utils';
 import type { ConfigModel } from '../types';
 
 export function createSummary(

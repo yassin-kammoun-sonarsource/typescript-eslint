@@ -123,7 +123,7 @@ async function main(): Promise<void> {
 
   const fileUrl = path.join(
     __dirname,
-    '../src/components/playground/packageVersions.json',
+    '../src/components/packageVersions.json',
   );
 
   await fs.writeFile(fileUrl, JSON.stringify(result, null, 2) + '\n', 'utf8');

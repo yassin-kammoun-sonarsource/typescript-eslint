@@ -19,16 +19,7 @@ export type TSConfig = Record<string, unknown> & {
   compilerOptions: Record<string, unknown>;
 };
 
-export type ConfigFileType =
-  | 'ts'
-  | 'tsx'
-  | 'js'
-  | 'jsx'
-  | 'd.ts'
-  | 'cjs'
-  | 'mjs'
-  | 'cts'
-  | 'mts';
+export type ConfigFileType = `${ts.Extension}`;
 
 export type ConfigShowAst = false | 'es' | 'ts' | 'scope' | 'types';
 

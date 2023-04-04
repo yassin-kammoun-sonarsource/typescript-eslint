@@ -4,29 +4,29 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 
-import ASTViewer from '../ast/ASTViewer';
-import ConfigEslint from '../config/ConfigEslint';
-import ConfigTypeScript from '../config/ConfigTypeScript';
-import LoadingEditor from '../editor/LoadingEditor';
-import useHashState from '../hooks/useHashState';
-import EditorTabs from '../layout/EditorTabs';
-import { createFileSystem } from '../linter/bridge';
-import type { UpdateModel } from '../linter/types';
-import { isCodeFile, isEslintrcFile, isTSConfigFile } from '../linter/utils';
-import { TypesDetails } from '../typeDetails/TypesDetails';
+import ASTViewer from './ast/ASTViewer';
 import { defaultConfig, detailTabs } from './config';
+import ConfigEslint from './config/ConfigEslint';
+import ConfigTypeScript from './config/ConfigTypeScript';
+import LoadingEditor from './editor/LoadingEditor';
 import { ErrorsViewer } from './ErrorsViewer';
 import { ESQueryFilter } from './ESQueryFilter';
+import useHashState from './hooks/useHashState';
+import EditorTabs from './layout/EditorTabs';
+import { createFileSystem } from './linter/bridge';
+import type { UpdateModel } from './linter/types';
+import { isCodeFile, isEslintrcFile, isTSConfigFile } from './linter/utils';
 import OptionsSelector from './OptionsSelector';
 import styles from './playground.module.css';
+import { TypesDetails } from './typeDetails/TypesDetails';
 import type { ErrorGroup, PlaygroundSystem } from './types';
 
-function PlaygroundRoot(): JSX.Element {
+function Playground(): JSX.Element {
   const [config, setConfig] = useHashState(defaultConfig);
 
   const [system] = useState<PlaygroundSystem>(() => createFileSystem(config));
-  const [activeFile, setFileName] = useState(`file.${config.fileType}`);
-  const [editorFile, setEditorFile] = useState(`file.${config.fileType}`);
+  const [activeFile, setFileName] = useState(`file${config.fileType}`);
+  const [editorFile, setEditorFile] = useState(`file${config.fileType}`);
 
   const [errors, setErrors] = useState<ErrorGroup[]>([]);
   const [astModel, setAstModel] = useState<UpdateModel>();
@@ -61,7 +61,7 @@ function PlaygroundRoot(): JSX.Element {
   }, [setConfig, system]);
 
   useEffect(() => {
-    const newFile = `file.${config.fileType}`;
+    const newFile = `file${config.fileType}`;
     if (newFile !== editorFile) {
       if (editorFile === activeFile) {
         setFileName(newFile);
@@ -190,4 +190,4 @@ function PlaygroundRoot(): JSX.Element {
   );
 }
 
-export default PlaygroundRoot;
+export default Playground;
