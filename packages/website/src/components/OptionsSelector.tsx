@@ -7,15 +7,15 @@ import IconExternalLink from '@theme/Icon/ExternalLink';
 import React, { useCallback } from 'react';
 
 import { useClipboard } from '../hooks/useClipboard';
+import { fileTypes, tsVersions } from './config';
 import Checkbox from './inputs/Checkbox';
 import Dropdown from './inputs/Dropdown';
 import Tooltip from './inputs/Tooltip';
 import ActionLabel from './layout/ActionLabel';
 import Expander from './layout/Expander';
 import InputLabel from './layout/InputLabel';
-import { fileTypes, tsVersions } from './config';
 import { createMarkdown, createMarkdownParams } from './lib/markdown';
-import styles from './playground.module.css';
+import styles from './Playground.module.css';
 import type { ConfigModel } from './types';
 
 export interface OptionsSelectorParams {

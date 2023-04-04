@@ -18,17 +18,29 @@ exports.analyze = analyze;
 exports.visitorKeys = visitorKeys;
 exports.astConverter = astConverter;
 exports.esquery = esquery;
-exports.Linter = Linter;
-exports.rules = plugin.rules;
+
+exports.createLinter = function () {
+  const linter = new Linter();
+  for (const name in plugin.rules) {
+    linter.defineRule(`@typescript-eslint/${name}`, plugin.rules[name]);
+  }
+  return linter;
+};
 
 /** @type {Record<string, unknown>} */
 const configs = {};
 
-for (const [key, value] of Object.entries(eslintJs.configs)) {
-  configs[`eslint:${key}`] = value;
+for (const [name, value] of Object.entries(eslintJs.configs)) {
+  configs[`eslint:${name}`] = value;
 }
-for (const [key, value] of Object.entries(plugin.configs)) {
-  configs[`plugin:@typescript-eslint/${key}`] = value;
+
+for (const [name, value] of Object.entries(plugin.configs)) {
+  if (value.extends && Array.isArray(value.extends)) {
+    value.extends = value.extends.map(name =>
+      name.replace(/^\.\/configs\//, 'plugin:@typescript-eslint/'),
+    );
+  }
+  configs[`plugin:@typescript-eslint/${name}`] = value;
 }
 
 exports.configs = configs;

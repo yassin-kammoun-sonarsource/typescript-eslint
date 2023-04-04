@@ -5,7 +5,7 @@ import type * as ts from 'typescript';
 import { findSelectionPath } from '../ast/selectedRange';
 import type { OnHoverNodeFn } from '../ast/types';
 import { isTSNode } from '../ast/utils';
-import styles from '../playground.module.css';
+import styles from '../Playground.module.css';
 import { SimplifiedTreeView } from './SimplifiedTreeView';
 import { TypeInfo } from './TypeInfo';
 

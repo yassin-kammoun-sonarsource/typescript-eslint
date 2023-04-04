@@ -17,7 +17,7 @@ import { createFileSystem } from './linter/bridge';
 import type { UpdateModel } from './linter/types';
 import { isCodeFile, isEslintrcFile, isTSConfigFile } from './linter/utils';
 import OptionsSelector from './OptionsSelector';
-import styles from './playground.module.css';
+import styles from './Playground.module.css';
 import { TypesDetails } from './typeDetails/TypesDetails';
 import type { ErrorGroup, PlaygroundSystem } from './types';
 

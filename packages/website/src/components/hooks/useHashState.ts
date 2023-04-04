@@ -2,9 +2,9 @@ import { useHistory } from '@docusaurus/router';
 import * as lz from 'lz-string';
 import { useCallback, useState } from 'react';
 
+import { fileTypes } from '../config';
 import { toJson } from '../config/utils';
 import { hasOwnProperty } from '../lib/has-own-property';
-import { fileTypes } from '../config';
 import type { ConfigFileType, ConfigModel, ConfigShowAst } from '../types';
 
 function writeQueryParam(value: string | null): string {

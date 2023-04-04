@@ -1,4 +1,4 @@
-import type { configs, rules } from '@typescript-eslint/eslint-plugin';
+import type { configs } from '@typescript-eslint/eslint-plugin';
 import type { analyze, ScopeManager } from '@typescript-eslint/scope-manager';
 import type { astConverter } from '@typescript-eslint/typescript-estree/use-at-your-own-risk';
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
@@ -19,11 +19,10 @@ export interface Disposable {
 }
 
 export interface WebLinterModule {
-  Linter: typeof TSESLint.Linter;
+  createLinter: () => TSESLint.Linter;
   analyze: typeof analyze;
   visitorKeys: TSESLint.SourceCode.VisitorKeys;
   astConverter: typeof astConverter;
-  rules: typeof rules;
   configs: typeof configs;
   esquery: typeof esquery;
 }

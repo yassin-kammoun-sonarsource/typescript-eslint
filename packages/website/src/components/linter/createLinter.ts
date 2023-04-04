@@ -48,14 +48,7 @@ export function createLinter(
 
   const configs = Object.keys(webLinterModule.configs);
 
-  const linter = new webLinterModule.Linter();
-
-  for (const name in webLinterModule.rules) {
-    linter.defineRule(
-      `@typescript-eslint/${name}`,
-      webLinterModule.rules[name],
-    );
-  }
+  const linter = webLinterModule.createLinter();
 
   const parser = createParser(
     system,
@@ -95,25 +88,16 @@ export function createLinter(
     return undefined;
   };
 
-  const normalizeConfigName = (name: string): string => {
-    // ts-eslint uses relative paths to refer to configs
-    if (name.startsWith('./configs/')) {
-      return name.replace('./configs/', 'plugin:@typescript-eslint/');
-    }
-    return name;
-  };
-
   const getRulesFromConfig = (
     cfg: Partial<TSESLint.Linter.Config>,
   ): TSESLint.Linter.RulesRecord => {
     const newRules: TSESLint.Linter.RulesRecord = {};
     if (cfg.extends && Array.isArray(cfg.extends)) {
       for (const extendsName of cfg.extends) {
-        const ext = normalizeConfigName(extendsName);
-        if (ext in webLinterModule.configs) {
+        if (extendsName in webLinterModule.configs) {
           Object.assign(
             newRules,
-            getRulesFromConfig(webLinterModule.configs[ext]),
+            getRulesFromConfig(webLinterModule.configs[extendsName]),
           );
         }
       }
