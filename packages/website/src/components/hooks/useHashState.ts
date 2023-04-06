@@ -2,7 +2,7 @@ import { useHistory } from '@docusaurus/router';
 import * as lz from 'lz-string';
 import { useCallback, useState } from 'react';
 
-import { fileTypes } from '../config';
+import { fileTypes } from '../options';
 import { hasOwnProperty } from '../lib/has-own-property';
 import { toJson } from '../lib/json';
 import { shallowEqual } from '../lib/shallowEqual';

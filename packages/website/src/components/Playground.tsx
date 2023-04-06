@@ -5,7 +5,7 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 
 import ASTViewer from './ast/ASTViewer';
-import { defaultConfig, detailTabs } from './config';
+import { defaultConfig, detailTabs } from './options';
 import ConfigEslint from './config/ConfigEslint';
 import ConfigTypeScript from './config/ConfigTypeScript';
 import LoadingEditor from './editor/LoadingEditor';

@@ -7,7 +7,7 @@ import IconExternalLink from '@theme/Icon/ExternalLink';
 import React, { useCallback } from 'react';
 
 import { useClipboard } from '../hooks/useClipboard';
-import { fileTypes, tsVersions } from './config';
+import { fileTypes, tsVersions } from './options';
 import Checkbox from './inputs/Checkbox';
 import Dropdown from './inputs/Dropdown';
 import Tooltip from './inputs/Tooltip';
