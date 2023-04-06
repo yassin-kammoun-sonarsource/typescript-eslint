@@ -1,43 +1,38 @@
 import { useSystemFile } from '@site/src/components/hooks/useSystemFile';
 import type { JSONSchema4 } from 'json-schema';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { ensureObject } from '../lib/json';
 import { shallowEqual } from '../lib/shallowEqual';
 import type { PlaygroundSystem } from '../types';
-import type { ConfigOptionsType } from './ConfigEditor';
 import ConfigEditor from './ConfigEditor';
 import { schemaToConfigOptions } from './utils';
 
-export interface ConfigEslintProps {
+export interface ConfigProps {
   readonly className?: string;
   readonly system: PlaygroundSystem;
 }
 
-function readConfigSchema(system: PlaygroundSystem): ConfigOptionsType[] {
-  const schemaFile = system.readFile('/schema/eslint.schema');
-  if (schemaFile) {
-    const schema = JSON.parse(schemaFile) as JSONSchema4;
-    if (schema.type === 'object' && schema.properties?.rules?.properties) {
-      return schemaToConfigOptions(
-        schema.properties.rules.properties,
-      ).reverse();
-    }
-  }
-
-  return [];
-}
-
-function ConfigEslint({ className, system }: ConfigEslintProps): JSX.Element {
+function ConfigEslint({ className, system }: ConfigProps): JSX.Element {
   const [rawConfig, updateConfigObject] = useSystemFile(system, '/.eslintrc');
-  const configObject = useMemo(() => {
-    return ensureObject(rawConfig?.rules);
-  }, [rawConfig]);
+  const configObject = useMemo(
+    () => ensureObject(rawConfig?.rules),
+    [rawConfig],
+  );
 
-  const [options, updateOptions] = useState<ConfigOptionsType[]>([]);
+  const options = useMemo(() => {
+    const schemaContent = system.readFile('/schema/eslint.schema');
+    if (schemaContent) {
+      const schema = JSON.parse(schemaContent) as JSONSchema4;
+      if (schema.type === 'object') {
+        const props = schema.properties?.rules?.properties;
+        if (props) {
+          return schemaToConfigOptions(props).reverse();
+        }
+      }
+    }
 
-  useEffect(() => {
-    updateOptions(readConfigSchema(system));
+    return [];
   }, [system]);
 
   const onChange = useCallback(

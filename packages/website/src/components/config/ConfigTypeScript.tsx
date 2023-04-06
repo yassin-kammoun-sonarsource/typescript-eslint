@@ -1,61 +1,47 @@
 import { useSystemFile } from '@site/src/components/hooks/useSystemFile';
 import type { JSONSchema4 } from 'json-schema';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { ensureObject } from '../lib/json';
 import { shallowEqual } from '../lib/shallowEqual';
 import type { PlaygroundSystem } from '../types';
-import type { ConfigOptionsType } from './ConfigEditor';
 import ConfigEditor from './ConfigEditor';
 import { schemaToConfigOptions } from './utils';
 
-export interface ConfigTypeScriptProps {
+export interface ConfigProps {
   readonly className?: string;
   readonly system: PlaygroundSystem;
 }
 
-function readConfigSchema(system: PlaygroundSystem): ConfigOptionsType[] {
-  const schemaFile = system.readFile('/schema/tsconfig.schema');
-  if (schemaFile) {
-    const schema = JSON.parse(schemaFile) as JSONSchema4;
-    if (
-      schema.type === 'object' &&
-      schema.properties?.compilerOptions?.properties
-    ) {
-      return schemaToConfigOptions(
-        schema.properties.compilerOptions.properties,
-      );
-    }
-  }
-
-  return [];
-}
-
-function ConfigTypeScript({
-  className,
-  system,
-}: ConfigTypeScriptProps): JSX.Element {
+function ConfigTypeScript({ className, system }: ConfigProps): JSX.Element {
   const [rawConfig, updateConfigObject] = useSystemFile(
     system,
     '/tsconfig.json',
   );
-  const configObject = useMemo(() => {
-    return ensureObject(rawConfig?.compilerOptions);
-  }, [rawConfig]);
+  const configObject = useMemo(
+    () => ensureObject(rawConfig?.compilerOptions),
+    [rawConfig],
+  );
 
-  const [options, updateOptions] = useState<ConfigOptionsType[]>([]);
+  const options = useMemo(() => {
+    const schemaContent = system.readFile('/schema/tsconfig.schema');
+    if (schemaContent) {
+      const schema = JSON.parse(schemaContent) as JSONSchema4;
+      if (schema.type === 'object') {
+        const props = schema.properties?.compilerOptions?.properties;
+        if (props) {
+          return schemaToConfigOptions(props);
+        }
+      }
+    }
 
-  useEffect(() => {
-    updateOptions(readConfigSchema(system));
+    return [];
   }, [system]);
 
   const onChange = useCallback(
     (newConfig: Record<string, unknown>) => {
       if (!shallowEqual(newConfig, ensureObject(rawConfig?.compilerOptions))) {
-        updateConfigObject({
-          ...rawConfig,
-          compilerOptions: newConfig,
-        });
+        updateConfigObject({ ...rawConfig, compilerOptions: newConfig });
       }
     },
     [rawConfig, updateConfigObject],
