@@ -10,10 +10,10 @@ export interface PropertyNameProps {
 }
 
 export default function PropertyName({
+  onClick: onClickProp,
+  onHover: onHoverProp,
   className,
   value,
-  onHover,
-  onClick: onClickProp,
 }: PropertyNameProps): JSX.Element {
   const onClick = useCallback(
     (e: MouseEvent<HTMLElement>) => {
@@ -24,12 +24,12 @@ export default function PropertyName({
   );
 
   const onMouseEnter = useCallback(() => {
-    onHover?.(true);
-  }, [onHover]);
+    onHoverProp?.(true);
+  }, [onHoverProp]);
 
   const onMouseLeave = useCallback(() => {
-    onHover?.(false);
-  }, [onHover]);
+    onHoverProp?.(false);
+  }, [onHoverProp]);
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLElement>) => {

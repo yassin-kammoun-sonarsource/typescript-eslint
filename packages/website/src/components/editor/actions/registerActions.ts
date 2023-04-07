@@ -1,12 +1,12 @@
 import type * as Monaco from 'monaco-editor';
 
-import type { LinterResult } from '../../linter/createLinter';
+import type { CreateLinter } from '../../linter/createLinter';
 import { applyEdit } from './utils';
 
 export function registerActions(
   monaco: typeof Monaco,
   editor: Monaco.editor.IStandaloneCodeEditor,
-  linter: LinterResult,
+  linter: CreateLinter,
 ): Monaco.IDisposable {
   const disposable = [
     editor.addAction({

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { parseJSONObject, toJson } from '../lib/json';
-import type { PlaygroundSystem } from '../types';
+import type { PlaygroundSystem } from '../linter/types';
 
 function readJsonFile<T>(system: PlaygroundSystem, fileName: string): T {
   const tsconfig = system.readFile(fileName);

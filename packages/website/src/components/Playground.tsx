@@ -5,7 +5,6 @@ import type { ImperativePanelHandle } from 'react-resizable-panels';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 
 import ASTViewer from './ast/ASTViewer';
-import { defaultConfig, detailTabs } from './options';
 import ConfigEslint from './config/ConfigEslint';
 import ConfigTypeScript from './config/ConfigTypeScript';
 import LoadingEditor from './editor/LoadingEditor';
@@ -14,19 +13,19 @@ import { ESQueryFilter } from './ESQueryFilter';
 import useHashState from './hooks/useHashState';
 import EditorTabs from './layout/EditorTabs';
 import { createFileSystem } from './linter/bridge';
-import type { UpdateModel } from './linter/types';
-import { isCodeFile, isEslintrcFile, isTSConfigFile } from './linter/utils';
+import type { PlaygroundSystem, UpdateModel } from './linter/types';
+import { defaultConfig, detailTabs } from './options';
 import OptionsSelector from './OptionsSelector';
 import styles from './Playground.module.css';
 import { TypesDetails } from './typeDetails/TypesDetails';
-import type { ErrorGroup, PlaygroundSystem } from './types';
+import type { ErrorGroup } from './types';
 
 function Playground(): JSX.Element {
   const [config, setConfig] = useHashState(defaultConfig);
 
   const [system] = useState<PlaygroundSystem>(() => createFileSystem(config));
-  const [activeFile, setFileName] = useState(`file${config.fileType}`);
-  const [editorFile, setEditorFile] = useState(`file${config.fileType}`);
+  const [activeFile, setFileName] = useState(`input${config.fileType}`);
+  const [editorFile, setEditorFile] = useState(`input${config.fileType}`);
   const [visualEslintRc, setVisualEslintRc] = useState(false);
   const [visualTSConfig, setVisualTSConfig] = useState(false);
   const [errors, setErrors] = useState<ErrorGroup[]>([]);
@@ -57,26 +56,24 @@ function Playground(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    const dispose = system.watchFile(
-      '/*',
-      fileName => {
-        if (isCodeFile(fileName)) {
-          setConfig({ code: system.readFile(fileName) });
-        } else if (isEslintrcFile(fileName)) {
-          setConfig({ eslintrc: system.readFile(fileName) });
-        } else if (isTSConfigFile(fileName)) {
-          setConfig({ tsconfig: system.readFile(fileName) });
-        }
-      },
-      500,
-    );
+    const closeable = [
+      system.watchFile('/input.*', fileName => {
+        setConfig({ code: system.readFile(fileName) });
+      }),
+      system.watchFile('/.eslintrc', fileName => {
+        setConfig({ eslintrc: system.readFile(fileName) });
+      }),
+      system.watchFile('/tsconfig.json', fileName => {
+        setConfig({ tsconfig: system.readFile(fileName) });
+      }),
+    ];
     return () => {
-      dispose.close();
+      closeable.forEach(d => d.close());
     };
   }, [setConfig, system]);
 
   useEffect(() => {
-    const newFile = `file${config.fileType}`;
+    const newFile = `input${config.fileType}`;
     if (newFile !== editorFile) {
       if (editorFile === activeFile) {
         setFileName(newFile);

@@ -7,13 +7,13 @@ import { addLibFiles } from '../linter/bridge';
 import { createLinter } from '../linter/createLinter';
 import type { WebLinterModule } from '../linter/types';
 import { isCodeFile } from '../linter/utils';
+import { defaultEditorOptions } from '../options';
 import { createModels, determineLanguage } from './actions/createModels';
 import { registerActions } from './actions/registerActions';
 import { registerDefaults } from './actions/registerDefaults';
 import { registerEvents } from './actions/registerEvents';
 import { registerLinter } from './actions/registerLinter';
 import type { LintCodeAction } from './actions/utils';
-import { defaultEditorOptions } from './config';
 import type { LoadingEditorProps } from './LoadingEditor';
 
 interface LoadedEditorProps extends LoadingEditorProps {
@@ -108,13 +108,12 @@ export default function LoadedEditor({
   ): void => {
     editorRef.current = editor;
     window.esquery = utils.esquery;
-    // @ts-expect-error: TODO: remove me, this is only used for debugging
     window.system = system;
 
     // we want to ignore this error
     void addLibFiles(system, monaco).then(() => {
       const globalActions = new Map<string, Map<string, LintCodeAction[]>>();
-      const linter = createLinter(monaco, onUpdate, system, utils);
+      const linter = createLinter(system, utils);
       registerDefaults(monaco, linter, system);
       createModels(monaco, editor, system);
       registerActions(monaco, editor, linter);
@@ -131,8 +130,9 @@ export default function LoadedEditor({
       const model = editor.getModel()!;
       model.updateOptions({ tabSize: 2, insertSpaces: true });
       monaco.editor.setModelLanguage(model, determineLanguage(activeFile));
-
-      linter.lintAllFiles();
+      linter.onParse((_, updateModel) => {
+        onUpdate(updateModel);
+      });
     });
   };
 

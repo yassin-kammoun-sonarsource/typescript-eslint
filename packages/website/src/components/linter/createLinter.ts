@@ -1,59 +1,48 @@
 import type { TSESLint } from '@typescript-eslint/utils';
-import type * as Monaco from 'monaco-editor';
 import type * as ts from 'typescript';
 
-import { parseESLintRC, parseTSConfig } from '../config/utils';
-import type { PlaygroundSystem } from '../types';
+import { createCompilerOptions } from '../lib/createCompilerOptions';
+import { createEventsBinder } from '../lib/createEventsBinder';
+import { parseESLintRC, parseTSConfig } from '../lib/parseConfig';
 import { defaultEslintConfig, PARSER_NAME } from './config';
 import { createParser } from './createParser';
-import type { Disposable, UpdateModel, WebLinterModule } from './types';
-import {
-  createCompilerOptions,
-  isCodeFile,
-  isEslintrcFile,
-  isTSConfigFile,
-} from './utils';
+import type {
+  LinterOnLint,
+  LinterOnParse,
+  PlaygroundSystem,
+  WebLinterModule,
+} from './types';
 
-export type RulesMap = Map<
-  string,
-  { name: string; description?: string; url?: string }
->;
-
-export type LinterOnLint = (
-  fileName: string,
-  messages: TSESLint.Linter.LintMessage[],
-  rules: RulesMap,
-) => void;
-
-export interface LinterResult {
-  rules: RulesMap;
+export interface CreateLinter {
+  rules: Map<string, { name: string; description?: string; url?: string }>;
   configs: string[];
-  triggerFix: (filename: string) => TSESLint.Linter.FixReport | undefined;
-  triggerLint: (filename: string) => void;
-  lintAllFiles: () => void;
-  onLint: (cb: LinterOnLint) => Disposable;
+  triggerFix(filename: string): TSESLint.Linter.FixReport | undefined;
+  triggerLint(filename: string): void;
+  onLint(cb: LinterOnLint): { dispose(): void };
+  onParse(cb: LinterOnParse): { dispose(): void };
+  updateParserOptions(sourceType?: TSESLint.SourceType): void;
 }
 
 export function createLinter(
-  monaco: typeof Monaco,
-  onUpdate: (model: UpdateModel) => void,
   system: PlaygroundSystem,
   webLinterModule: WebLinterModule,
-): LinterResult {
-  const rules: LinterResult['rules'] = new Map();
+): CreateLinter {
+  const rules: CreateLinter['rules'] = new Map();
+  const configs = new Map(Object.entries(webLinterModule.configs));
   let compilerOptions: ts.CompilerOptions = {};
-  const eslintConfig = { ...defaultEslintConfig };
+  const eslintConfig: TSESLint.Linter.Config = { ...defaultEslintConfig };
 
-  const onLintEvents: Set<LinterOnLint> = new Set();
-
-  const configs = Object.keys(webLinterModule.configs);
+  const onLint = createEventsBinder<LinterOnLint>();
+  const onParse = createEventsBinder<LinterOnParse>();
 
   const linter = webLinterModule.createLinter();
 
   const parser = createParser(
     system,
     compilerOptions,
-    (model): void => onUpdate(model),
+    (filename, model): void => {
+      onParse.trigger(filename, model);
+    },
     webLinterModule,
   );
 
@@ -68,10 +57,11 @@ export function createLinter(
   });
 
   const triggerLint = (filename: string): void => {
+    console.info('[Editor] linting triggered for file', filename);
     const code = system.readFile(filename) ?? '\n';
     if (code != null) {
       const messages = linter.verify(code, eslintConfig, filename);
-      onLintEvents.forEach(cb => cb(filename, messages, rules));
+      onLint.trigger(filename, messages);
     }
   };
 
@@ -88,40 +78,40 @@ export function createLinter(
     return undefined;
   };
 
-  const getRulesFromConfig = (
+  const updateParserOptions = (sourceType?: TSESLint.SourceType): void => {
+    eslintConfig.parserOptions ??= {};
+    eslintConfig.parserOptions.sourceType = sourceType ?? 'module';
+  };
+
+  const resolveEslintConfig = (
     cfg: Partial<TSESLint.Linter.Config>,
-  ): TSESLint.Linter.RulesRecord => {
-    const newRules: TSESLint.Linter.RulesRecord = {};
-    if (cfg.extends && Array.isArray(cfg.extends)) {
-      for (const extendsName of cfg.extends) {
-        if (extendsName in webLinterModule.configs) {
-          Object.assign(
-            newRules,
-            getRulesFromConfig(webLinterModule.configs[extendsName]),
-          );
+  ): TSESLint.Linter.Config => {
+    const config = { rules: {} };
+    if (cfg.extends) {
+      const cfgExtends = Array.isArray(cfg.extends)
+        ? cfg.extends
+        : [cfg.extends];
+      for (const extendsName of cfgExtends) {
+        const maybeConfig = configs.get(extendsName);
+        if (maybeConfig) {
+          const resolved = resolveEslintConfig(maybeConfig);
+          if (resolved.rules) {
+            Object.assign(config.rules, resolved.rules);
+          }
         }
       }
     }
-    if (cfg.overrides && Array.isArray(cfg.overrides)) {
-      for (const override of cfg.overrides) {
-        // we ignore match condition as we want to load them all
-        Object.assign(newRules, getRulesFromConfig(override));
-      }
-    }
     if (cfg.rules) {
-      Object.assign(newRules, cfg.rules);
+      Object.assign(config.rules, cfg.rules);
     }
-    return newRules;
+    return config;
   };
 
   const applyEslintConfig = (fileName: string): void => {
     try {
       const file = system.readFile(fileName) ?? '{}';
-      const parsed = parseESLintRC(file);
-      eslintConfig.rules = getRulesFromConfig(parsed);
-      eslintConfig.parserOptions ??= {};
-      eslintConfig.parserOptions.sourceType =
-        parsed.parserOptions?.sourceType ?? 'module';
+      const parsed = resolveEslintConfig(parseESLintRC(file));
+      eslintConfig.rules = parsed.rules;
       console.log('[Editor] Updating', fileName, eslintConfig);
     } catch (e) {
       console.error(e);
@@ -132,65 +122,28 @@ export function createLinter(
     try {
       const file = system.readFile(fileName) ?? '{}';
       const parsed = parseTSConfig(file).compilerOptions;
-      const options = createCompilerOptions(parsed);
-
-      compilerOptions = options.options;
-
+      compilerOptions = createCompilerOptions(parsed);
       console.log('[Editor] Updating', fileName, compilerOptions);
-
-      monaco.languages.typescript.typescriptDefaults.setCompilerOptions(
-        // @ts-expect-error monaco is using different type for CompilerOptions
-        compilerOptions,
-      );
       parser.updateConfig(compilerOptions);
     } catch (e) {
       console.error(e);
     }
   };
 
-  const lintAllFiles = (): void => {
-    const files = system.readDirectory('/');
-    for (const fileName of files) {
-      if (isCodeFile(fileName)) {
-        triggerLint(fileName);
-      }
-    }
-  };
-
-  // Trigger linting 500ms after file changed
-  system.watchFile(
-    '/*',
-    fileName => {
-      if (isCodeFile(fileName)) {
-        triggerLint(fileName);
-      } else if (isEslintrcFile(fileName)) {
-        applyEslintConfig(fileName);
-        lintAllFiles();
-      } else if (isTSConfigFile(fileName)) {
-        applyTSConfig(fileName);
-        lintAllFiles();
-      }
-    },
-    500,
-  );
+  system.watchFile('/input.*', triggerLint);
+  system.watchFile('/.eslintrc', applyEslintConfig);
+  system.watchFile('/tsconfig.json', applyTSConfig);
 
   applyEslintConfig('/.eslintrc');
   applyTSConfig('/tsconfig.json');
 
   return {
     rules,
-    configs,
-    lintAllFiles,
+    configs: Array.from(configs.keys()),
     triggerFix,
     triggerLint,
-    onLint: (cb): Disposable => {
-      onLintEvents.add(cb);
-
-      return {
-        dispose: (): void => {
-          onLintEvents.delete(cb);
-        },
-      };
-    },
+    updateParserOptions,
+    onParse: onParse.register,
+    onLint: onLint.register,
   };
 }

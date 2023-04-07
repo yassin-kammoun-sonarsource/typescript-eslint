@@ -1,8 +1,9 @@
 import type * as Monaco from 'monaco-editor';
 
 import { debounce } from '../../lib/debounce';
+import type { PlaygroundSystem } from '../../linter/types';
 import { isCodeFile } from '../../linter/utils';
-import type { ErrorGroup, PlaygroundSystem } from '../../types';
+import type { ErrorGroup } from '../../types';
 import type { LintCodeAction } from './utils';
 import {
   applyEdit,

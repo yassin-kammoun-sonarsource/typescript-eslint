@@ -4,7 +4,7 @@ import React, { useCallback, useMemo } from 'react';
 
 import { ensureObject } from '../lib/json';
 import { shallowEqual } from '../lib/shallowEqual';
-import type { PlaygroundSystem } from '../types';
+import type { PlaygroundSystem } from '../linter/types';
 import ConfigEditor from './ConfigEditor';
 import { schemaToConfigOptions } from './utils';
 

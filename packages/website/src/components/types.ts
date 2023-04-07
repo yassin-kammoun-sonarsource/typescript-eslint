@@ -1,6 +1,36 @@
 import type { TSESLint } from '@typescript-eslint/utils';
 import type * as ts from 'typescript';
 
+export type CompilerFlags = Record<string, unknown>;
+
+export type SourceType = TSESLint.SourceType;
+
+export type RulesRecord = TSESLint.Linter.RulesRecord;
+
+export interface RuleDetails {
+  name: string;
+  description?: string;
+  url?: string;
+}
+
+export type TabType = 'code' | 'tsconfig' | 'eslintrc';
+
+export type ConfigFileType = `${ts.Extension}`;
+
+export type ConfigShowAst = false | 'es' | 'ts' | 'scope' | 'types';
+
+export interface ConfigModel {
+  fileType?: ConfigFileType;
+  sourceType?: SourceType;
+  eslintrc: string;
+  tsconfig: string;
+  code: string;
+  ts: string;
+  showAST?: ConfigShowAst;
+}
+
+export type SelectedRange = [number, number];
+
 export interface ErrorItem {
   message: string;
   location: string;
@@ -16,24 +46,5 @@ export interface ErrorGroup {
 }
 
 export type TSConfig = Record<string, unknown> & {
-  compilerOptions: Record<string, unknown>;
+  compilerOptions: CompilerFlags;
 };
-
-export type ConfigFileType = `${ts.Extension}`;
-
-export type ConfigShowAst = false | 'es' | 'ts' | 'scope' | 'types';
-
-export interface ConfigModel {
-  sourceType?: TSESLint.SourceType;
-  eslintrc: string;
-  tsconfig: string;
-  code: string;
-  ts: string;
-  showAST?: ConfigShowAst;
-  fileType: ConfigFileType;
-}
-
-export type PlaygroundSystem = ts.System &
-  Required<Pick<ts.System, 'watchFile' | 'deleteFile'>> & {
-    removeFile: (fileName: string) => void;
-  };

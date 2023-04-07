@@ -34,7 +34,7 @@ export const defaultEslintConfig: TSESLint.Linter.Config = {
   parser: PARSER_NAME,
   parserOptions: {
     ecmaFeatures: {
-      jsx: false,
+      jsx: true,
       globalReturn: false,
     },
     ecmaVersion: 'latest',

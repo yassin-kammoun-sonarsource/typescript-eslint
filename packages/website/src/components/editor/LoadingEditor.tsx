@@ -3,8 +3,12 @@ import type * as Monaco from 'monaco-editor';
 import React, { useEffect, useRef, useState } from 'react';
 
 import Loader from '../layout/Loader';
-import type { UpdateModel, WebLinterModule } from '../linter/types';
-import type { ErrorGroup, PlaygroundSystem } from '../types';
+import type {
+  PlaygroundSystem,
+  UpdateModel,
+  WebLinterModule,
+} from '../linter/types';
+import type { ErrorGroup } from '../types';
 import LoadedEditor from './LoadedEditor';
 import { loadWebLinterModule } from './loadWebLinterModule';
 

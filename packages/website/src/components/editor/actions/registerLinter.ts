@@ -1,13 +1,13 @@
 import type * as Monaco from 'monaco-editor';
 
-import type { LinterResult } from '../../linter/createLinter';
+import type { CreateLinter } from '../../linter/createLinter';
 import type { LintCodeAction } from './utils';
 import { createEditOperation, createURI } from './utils';
 
 export function registerLinter(
   monaco: typeof Monaco,
   editor: Monaco.editor.IStandaloneCodeEditor,
-  linter: LinterResult,
+  linter: CreateLinter,
   globalActions: Map<string, Map<string, LintCodeAction[]>>,
 ): Monaco.IDisposable {
   const computeMarkerCode = (

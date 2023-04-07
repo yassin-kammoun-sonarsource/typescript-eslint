@@ -1,4 +1,3 @@
-import type { configs } from '@typescript-eslint/eslint-plugin';
 import type { analyze, ScopeManager } from '@typescript-eslint/scope-manager';
 import type { astConverter } from '@typescript-eslint/typescript-estree/use-at-your-own-risk';
 import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
@@ -14,15 +13,23 @@ export interface UpdateModel {
   typeChecker?: ts.TypeChecker;
 }
 
-export interface Disposable {
-  dispose(): void;
-}
-
 export interface WebLinterModule {
   createLinter: () => TSESLint.Linter;
   analyze: typeof analyze;
   visitorKeys: TSESLint.SourceCode.VisitorKeys;
   astConverter: typeof astConverter;
-  configs: typeof configs;
   esquery: typeof esquery;
+  configs: Record<string, TSESLint.Linter.Config>;
 }
+
+export type PlaygroundSystem = ts.System &
+  Required<Pick<ts.System, 'watchFile' | 'deleteFile'>> & {
+    removeFile: (fileName: string) => void;
+  };
+
+export type LinterOnLint = (
+  fileName: string,
+  messages: TSESLint.Linter.LintMessage[],
+) => void;
+
+export type LinterOnParse = (fileName: string, model: UpdateModel) => void;

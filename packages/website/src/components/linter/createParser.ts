@@ -4,14 +4,18 @@ import type { ParserOptions } from '@typescript-eslint/types';
 import type { TSESLint } from '@typescript-eslint/utils';
 import type * as ts from 'typescript';
 
-import type { PlaygroundSystem } from '../types';
 import { defaultParseSettings } from './config';
-import type { ParseSettings, UpdateModel, WebLinterModule } from './types';
+import type {
+  ParseSettings,
+  PlaygroundSystem,
+  UpdateModel,
+  WebLinterModule,
+} from './types';
 
 export function createParser(
   system: PlaygroundSystem,
   compilerOptions: ts.CompilerOptions,
-  onUpdate: (model: UpdateModel) => void,
+  onUpdate: (filename: string, model: UpdateModel) => void,
   utils: WebLinterModule,
 ): TSESLint.Linter.ParserModule & {
   updateConfig: (compilerOptions: ts.CompilerOptions) => void;
@@ -39,7 +43,7 @@ export function createParser(
       text: string,
       options: ParserOptions = {},
     ): TSESLint.Linter.ESLintParseResult => {
-      const filePath = options.filePath ?? '/file.ts';
+      const filePath = options.filePath ?? '/input.ts';
 
       // if text is empty use empty line to avoid error
       const code = text || '\n';
@@ -74,7 +78,7 @@ export function createParser(
 
       const checker = program.getTypeChecker();
 
-      onUpdate({
+      onUpdate(filePath, {
         storedAST: converted.estree,
         storedTsAST: tsAst,
         storedScope: scopeManager,

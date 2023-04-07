@@ -3,7 +3,8 @@ import type * as Monaco from 'monaco-editor';
 import type * as ts from 'typescript';
 
 import { debounce } from '../lib/debounce';
-import type { ConfigModel, PlaygroundSystem } from '../types';
+import type { PlaygroundSystem } from '../linter/types';
+import type { ConfigModel } from '../types';
 
 export async function addLibFiles(
   system: PlaygroundSystem,
@@ -25,17 +26,23 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
   const files = new Map<string, string>();
   files.set(`/.eslintrc`, config.eslintrc);
   files.set(`/tsconfig.json`, config.tsconfig);
-  files.set(`/file${config.fileType}`, config.code);
+  files.set(`/input${config.fileType}`, config.code);
 
   const fileWatcherCallbacks = new Map<RegExp, Set<ts.FileWatcherCallback>>();
 
   const system = createSystem(files) as PlaygroundSystem;
 
-  system.watchFile = (path, callback, pollingInterval): ts.FileWatcher => {
+  system.watchFile = (
+    path,
+    callback,
+    pollingInterval = 500,
+  ): ts.FileWatcher => {
     const cb = pollingInterval ? debounce(callback, pollingInterval) : callback;
 
     const escapedPath = path.replace(/\./g, '\\.').replace(/\*/g, '[^/]+');
     const expPath = new RegExp(`^${escapedPath}$`, '');
+
+    console.log(expPath);
 
     let handle = fileWatcherCallbacks.get(expPath);
     if (!handle) {
