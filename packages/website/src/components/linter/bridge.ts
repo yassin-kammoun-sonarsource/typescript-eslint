@@ -42,8 +42,6 @@ export function createFileSystem(config: ConfigModel): PlaygroundSystem {
     const escapedPath = path.replace(/\./g, '\\.').replace(/\*/g, '[^/]+');
     const expPath = new RegExp(`^${escapedPath}$`, '');
 
-    console.log(expPath);
-
     let handle = fileWatcherCallbacks.get(expPath);
     if (!handle) {
       handle = new Set();
