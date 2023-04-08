@@ -23,10 +23,6 @@ export function parseJSONObject(code?: string): Record<string, unknown> {
   return {};
 }
 
-export function fromJson(cfg: string): unknown {
-  return JSON.parse(cfg);
-}
-
 /**
  * Convert a config object to a JSON string
  */

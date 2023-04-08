@@ -1,8 +1,7 @@
 import BrowserOnly from '@docusaurus/BrowserOnly';
+import Loader from '@site/src/components/layout/Loader';
 import Layout from '@theme/Layout';
 import React, { lazy, Suspense } from 'react';
-
-import Loader from '../components/layout/Loader';
 
 function Play(): JSX.Element {
   return (

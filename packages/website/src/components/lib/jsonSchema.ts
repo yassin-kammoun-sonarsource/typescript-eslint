@@ -36,12 +36,14 @@ export function getEslintJsonSchema(linter: CreateLinter): JSONSchema4 {
     type: 'object',
     properties: {
       extends: {
-        type: 'array',
-        items: {
-          type: 'string',
-          enum: linter.configs,
-        },
-        uniqueItems: true,
+        oneOf: [
+          { type: 'string' },
+          {
+            type: 'array',
+            items: { type: 'string', enum: linter.configs },
+            uniqueItems: true,
+          },
+        ],
       },
       rules: {
         type: 'object',

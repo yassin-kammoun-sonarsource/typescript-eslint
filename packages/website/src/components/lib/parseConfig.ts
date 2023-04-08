@@ -1,14 +1,12 @@
-import type { TSESLint } from '@typescript-eslint/utils';
-
 import { isRecord } from '../ast/utils';
-import type { TSConfig } from '../types';
+import type { EslintRC, TSConfig } from '../types';
 import { ensureObject, parseJSONObject, toJson } from './json';
 
 /**
  * Parse a .eslintrc string into an object.
  * This function is pretty naive, as it only validates rules and extends.
  */
-export function parseESLintRC(code?: string): TSESLint.Linter.Config {
+export function parseESLintRC(code?: string): EslintRC {
   if (code) {
     try {
       const parsed = parseJSONObject(code);
@@ -21,7 +19,7 @@ export function parseESLintRC(code?: string): TSESLint.Linter.Config {
             ? parsed.extends
             : [];
       }
-      return parsed as TSESLint.Linter.Config;
+      return parsed as EslintRC;
     } catch (e) {
       console.error(e);
     }

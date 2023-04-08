@@ -45,6 +45,7 @@ export interface ErrorGroup {
   items: ErrorItem[];
 }
 
+export type EslintRC = TSESLint.Linter.Config;
 export type TSConfig = Record<string, unknown> & {
   compilerOptions: CompilerFlags;
 };

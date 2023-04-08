@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useCallback, useRef } from 'react';
 
-export function useFocus<T extends HTMLOrSVGElement>(): [
+function useFocus<T extends HTMLOrSVGElement>(): [
   React.RefObject<T>,
   () => void,
 ] {
@@ -11,3 +11,5 @@ export function useFocus<T extends HTMLOrSVGElement>(): [
   }, []);
   return [htmlElRef, setFocus];
 }
+
+export default useFocus;

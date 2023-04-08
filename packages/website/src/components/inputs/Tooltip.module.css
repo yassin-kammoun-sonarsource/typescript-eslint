@@ -15,10 +15,6 @@
   cursor: pointer;
 }
 
-.tooltip.hover > span {
-  text-decoration: underline;
-}
-
 .tooltip::after {
   background-color: var(--tooltip-bg-color);
   border-radius: 6px;

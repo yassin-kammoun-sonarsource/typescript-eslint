@@ -21,23 +21,3 @@ declare global {
     system: unknown;
   }
 }
-
-declare module 'typescript' {
-  interface OptionDeclarations {
-    name: string;
-    type?: unknown;
-    category?: { message: string };
-    description?: { message: string };
-    element?: {
-      type: unknown;
-    };
-
-    isCommandLineOnly?: boolean;
-    affectsEmit?: true;
-    affectsModuleResolution?: true;
-    affectsSourceFile?: true;
-    transpileOptionValue?: true;
-  }
-
-  const optionDeclarations: OptionDeclarations[];
-}
