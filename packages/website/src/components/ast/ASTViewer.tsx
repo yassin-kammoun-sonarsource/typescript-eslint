@@ -17,6 +17,7 @@ export interface ASTViewerProps {
   readonly filter?: ESQuery.Selector;
   readonly enableScrolling?: boolean;
   readonly hideCopyButton?: boolean;
+  readonly showTokens?: boolean;
 }
 
 function tryToApplyFilter<T>(value: T, filter?: ESQuery.Selector): T | T[] {
@@ -39,6 +40,7 @@ function ASTViewer({
   filter,
   enableScrolling,
   hideCopyButton,
+  showTokens,
 }: ASTViewerProps): JSX.Element {
   const model = useMemo(() => {
     if (filter) {
@@ -77,6 +79,7 @@ function ASTViewer({
         selectedPath={selectedPath}
         onClickNode={onClickNode}
         onHover={onHoverNode}
+        showTokens={showTokens}
       />
       {!hideCopyButton && <CopyButton value={model} />}
     </div>

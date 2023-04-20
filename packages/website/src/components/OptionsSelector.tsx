@@ -19,27 +19,23 @@ import styles from './Playground.module.css';
 import type { ConfigModel } from './types';
 
 export interface OptionsSelectorParams {
-  readonly config: ConfigModel;
-  readonly enableScrolling: boolean;
-  readonly setEnableScrolling: (checked: boolean) => void;
-  readonly setConfig: (cfg: Partial<ConfigModel>) => void;
+  readonly state: ConfigModel;
+  readonly setState: (cfg: Partial<ConfigModel>) => void;
 }
 
 function OptionsSelectorContent({
-  config,
-  setConfig,
-  enableScrolling,
-  setEnableScrolling,
+  state,
+  setState,
 }: OptionsSelectorParams): JSX.Element {
   const [copyLink, copyLinkToClipboard] = useClipboard(() =>
     document.location.toString(),
   );
   const [copyMarkdown, copyMarkdownToClipboard] = useClipboard(() =>
-    createMarkdown(config),
+    createMarkdown(state),
   );
 
   const openIssue = useCallback((): void => {
-    const params = createMarkdownParams(config);
+    const params = createMarkdownParams(state);
 
     window
       .open(
@@ -47,7 +43,7 @@ function OptionsSelectorContent({
         '_blank',
       )
       ?.focus();
-  }, [config]);
+  }, [state]);
 
   return (
     <>
@@ -57,8 +53,8 @@ function OptionsSelectorContent({
             name="ts"
             className="text--right"
             options={tsVersions}
-            value={config.ts}
-            onChange={(ts): void => setConfig({ ts })}
+            value={state.ts}
+            onChange={(ts): void => setState({ ts })}
           />
         </InputLabel>
         <InputLabel name="Eslint">{process.env.ESLINT_VERSION}</InputLabel>
@@ -68,25 +64,31 @@ function OptionsSelectorContent({
         <InputLabel name="File type">
           <Dropdown
             name="fileType"
-            value={config.fileType}
-            onChange={(fileType): void => setConfig({ fileType })}
+            value={state.fileType}
+            onChange={(fileType): void => setState({ fileType })}
             options={fileTypes}
           />
         </InputLabel>
         <InputLabel name="Source type">
           <Dropdown
             name="sourceType"
-            value={config.sourceType ?? 'module'}
-            onChange={(sourceType): void => setConfig({ sourceType })}
+            value={state.sourceType ?? 'module'}
+            onChange={(sourceType): void => setState({ sourceType })}
             options={['script', 'module']}
           />
         </InputLabel>
         <InputLabel name="Auto scroll">
           <Checkbox
             name="enableScrolling"
-            value=""
-            checked={enableScrolling}
-            onChange={setEnableScrolling}
+            checked={state.scroll}
+            onChange={(scroll): void => setState({ scroll })}
+          />
+        </InputLabel>
+        <InputLabel name="Show tokens">
+          <Checkbox
+            name="showTokens"
+            checked={state.showTokens}
+            onChange={(showTokens): void => setState({ showTokens })}
           />
         </InputLabel>
       </Expander>

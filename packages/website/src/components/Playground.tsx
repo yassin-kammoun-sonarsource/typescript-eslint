@@ -21,11 +21,11 @@ import { TypesDetails } from './typeDetails/TypesDetails';
 import type { ErrorGroup } from './types';
 
 function Playground(): JSX.Element {
-  const [config, setConfig] = useHashState(defaultConfig);
+  const [state, setState] = useHashState(defaultConfig);
 
-  const [system] = useState<PlaygroundSystem>(() => createFileSystem(config));
-  const [activeFile, setFileName] = useState(`input${config.fileType}`);
-  const [editorFile, setEditorFile] = useState(`input${config.fileType}`);
+  const [system] = useState<PlaygroundSystem>(() => createFileSystem(state));
+  const [activeFile, setFileName] = useState(`input${state.fileType}`);
+  const [editorFile, setEditorFile] = useState(`input${state.fileType}`);
   const [visualEslintRc, setVisualEslintRc] = useState(false);
   const [visualTSConfig, setVisualTSConfig] = useState(false);
   const [errors, setErrors] = useState<ErrorGroup[]>([]);
@@ -34,9 +34,6 @@ function Playground(): JSX.Element {
   const [selectedRange, setSelectedRange] = useState<[number, number]>();
   const [cursorPosition, onCursorChange] = useState<number>();
   const playgroundMenuRef = useRef<ImperativePanelHandle>(null);
-
-  // TODO: should we auto disable this on mobile
-  const [enableScrolling, setEnableScrolling] = useState<boolean>(true);
 
   const windowSize = useWindowSize();
 
@@ -58,29 +55,29 @@ function Playground(): JSX.Element {
   useEffect(() => {
     const closeable = [
       system.watchFile('/input.*', fileName => {
-        setConfig({ code: system.readFile(fileName) });
+        setState({ code: system.readFile(fileName) });
       }),
       system.watchFile('/.eslintrc', fileName => {
-        setConfig({ eslintrc: system.readFile(fileName) });
+        setState({ eslintrc: system.readFile(fileName) });
       }),
       system.watchFile('/tsconfig.json', fileName => {
-        setConfig({ tsconfig: system.readFile(fileName) });
+        setState({ tsconfig: system.readFile(fileName) });
       }),
     ];
     return () => {
       closeable.forEach(d => d.close());
     };
-  }, [setConfig, system]);
+  }, [setState, system]);
 
   useEffect(() => {
-    const newFile = `input${config.fileType}`;
+    const newFile = `input${state.fileType}`;
     if (newFile !== editorFile) {
       if (editorFile === activeFile) {
         setFileName(newFile);
       }
       setEditorFile(newFile);
     }
-  }, [config, system, editorFile, activeFile]);
+  }, [state, system, editorFile, activeFile]);
 
   useEffect(() => {
     if (windowSize === 'mobile') {
@@ -105,12 +102,7 @@ function Playground(): JSX.Element {
           collapsible={true}
           ref={playgroundMenuRef}
         >
-          <OptionsSelector
-            config={config}
-            setConfig={setConfig}
-            enableScrolling={enableScrolling}
-            setEnableScrolling={setEnableScrolling}
-          />
+          <OptionsSelector state={state} setState={setState} />
         </Panel>
         <PanelResizeHandle
           className={styles.PanelResizeHandle}
@@ -137,7 +129,7 @@ function Playground(): JSX.Element {
               ))}
             <LoadingEditor
               className={activeVisualEditor ? styles.hidden : ''}
-              tsVersion={config.ts}
+              tsVersion={state.ts}
               onUpdate={setAstModel}
               system={system}
               activeFile={activeFile}
@@ -158,17 +150,17 @@ function Playground(): JSX.Element {
             <div className={styles.playgroundInfoHeader}>
               <EditorTabs
                 tabs={detailTabs}
-                active={config.showAST ?? false}
-                change={(v): void => setConfig({ showAST: v })}
+                active={state.showAST ?? false}
+                change={(v): void => setState({ showAST: v })}
               />
-              {config.showAST === 'es' && (
+              {state.showAST === 'es' && (
                 <ESQueryFilter onChange={setEsQueryFilter} />
               )}
             </div>
             <div className={styles.playgroundInfo}>
-              {!config.showAST || !astModel ? (
+              {!state.showAST || !astModel ? (
                 <ErrorsViewer value={errors} />
-              ) : config.showAST === 'types' && astModel.storedTsAST ? (
+              ) : state.showAST === 'types' && astModel.storedTsAST ? (
                 <TypesDetails
                   typeChecker={astModel.typeChecker}
                   value={astModel.storedTsAST}
@@ -177,16 +169,17 @@ function Playground(): JSX.Element {
                 />
               ) : (
                 <ASTViewer
-                  key={config.showAST}
-                  filter={config.showAST === 'es' ? esQueryFilter : undefined}
+                  key={state.showAST}
+                  filter={state.showAST === 'es' ? esQueryFilter : undefined}
                   value={
-                    config.showAST === 'ts'
+                    state.showAST === 'ts'
                       ? astModel.storedTsAST
-                      : config.showAST === 'scope'
+                      : state.showAST === 'scope'
                       ? astModel.storedScope
                       : astModel.storedAST
                   }
-                  enableScrolling={enableScrolling}
+                  showTokens={state.showTokens}
+                  enableScrolling={state.scroll}
                   cursorPosition={cursorPosition}
                   onHoverNode={setSelectedRange}
                 />

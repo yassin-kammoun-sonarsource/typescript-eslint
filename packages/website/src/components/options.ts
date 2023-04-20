@@ -45,6 +45,8 @@ export const defaultConfig: ConfigModel = {
   eslintrc: toJson({
     rules: {},
   }),
+  scroll: true,
+  showTokens: false,
 };
 
 export const tsVersions: string[] = [...versions.typescript];

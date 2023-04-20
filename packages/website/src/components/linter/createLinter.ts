@@ -1,4 +1,4 @@
-import type { TSESLint } from '@typescript-eslint/utils';
+import type { JSONSchema, TSESLint, TSESTree } from '@typescript-eslint/utils';
 import type * as ts from 'typescript';
 
 import { createCompilerOptions } from '../lib/createCompilerOptions';
@@ -14,7 +14,15 @@ import type {
 } from './types';
 
 export interface CreateLinter {
-  rules: Map<string, { name: string; description?: string; url?: string }>;
+  rules: Map<
+    string,
+    {
+      name: string;
+      description?: string;
+      url?: string;
+      schema: JSONSchema.JSONSchema4 | readonly JSONSchema.JSONSchema4[];
+    }
+  >;
   configs: string[];
   triggerFix(filename: string): TSESLint.Linter.FixReport | undefined;
   triggerLint(filename: string): void;
@@ -53,6 +61,7 @@ export function createLinter(
       name: name,
       description: item.meta?.docs?.description,
       url: item.meta?.docs?.url,
+      schema: item.meta?.schema ?? [],
     });
   });
 
@@ -60,8 +69,28 @@ export function createLinter(
     console.info('[Editor] linting triggered for file', filename);
     const code = system.readFile(filename) ?? '\n';
     if (code != null) {
-      const messages = linter.verify(code, eslintConfig, filename);
-      onLint.trigger(filename, messages);
+      try {
+        const messages = linter.verify(code, eslintConfig, filename);
+        onLint.trigger(filename, messages);
+      } catch (e) {
+        const lintMessage: TSESLint.Linter.LintMessage = {
+          source: 'eslint',
+          ruleId: '',
+          severity: 2,
+          nodeType: '',
+          column: 1,
+          line: 1,
+          message: String(e instanceof Error ? e.stack : e),
+        };
+        if (typeof e === 'object' && e && 'currentNode' in e) {
+          const node = e.currentNode as TSESTree.Node;
+          lintMessage.column = node.loc.start.column + 1;
+          lintMessage.line = node.loc.start.line;
+          lintMessage.endColumn = node.loc.end.column + 1;
+          lintMessage.endLine = node.loc.end.line;
+        }
+        onLint.trigger(filename, [lintMessage]);
+      }
     }
   };
 

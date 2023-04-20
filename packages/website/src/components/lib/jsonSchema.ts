@@ -2,11 +2,101 @@ import type { JSONSchema4 } from '@typescript-eslint/utils/json-schema';
 
 import type { CreateLinter } from '../linter/createLinter';
 
+const defaultRuleSchema: JSONSchema4 = {
+  type: ['string', 'number'],
+  enum: ['off', 'warn', 'error', 0, 1, 2],
+};
+
+// https://github.com/microsoft/TypeScript/issues/17002
+function isArray(arg: unknown): arg is readonly unknown[] {
+  return Array.isArray(arg);
+}
+
+/**
+ * Add the error level to the rule schema items
+ *
+ * if you encounter issues with rule schema validation you can check the schema by using the following code in the console:
+ * monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find(item => item.uri.includes('typescript-eslint/consistent-type-imports'))
+ * monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.find(item => item.uri.includes('no-unused-labels'))
+ * monaco.languages.json.jsonDefaults.diagnosticsOptions.schemas.filter(item => item.schema.type === 'array')
+ */
+export function getRuleJsonSchemaWithErrorLevel(
+  name: string,
+  ruleSchema: JSONSchema4 | readonly JSONSchema4[],
+): JSONSchema4 {
+  const defaultSchema = { ...defaultRuleSchema };
+  if (isArray(ruleSchema)) {
+    if (ruleSchema[0]?.$defs) {
+      defaultSchema.$defs = ruleSchema[0].$defs;
+    }
+    return {
+      type: 'array',
+      items: [defaultSchema, ...ruleSchema],
+      minItems: 1,
+      additionalItems: false,
+    };
+  }
+  // example: explicit-member-accessibility
+  if (isArray(ruleSchema.items)) {
+    if (ruleSchema.items[0]?.$defs) {
+      defaultSchema.$defs = ruleSchema.items[0].$defs;
+    }
+    return {
+      ...ruleSchema,
+      items: [defaultSchema, ...ruleSchema.items],
+      maxItems: ruleSchema.maxItems ? ruleSchema.maxItems + 1 : undefined,
+      minItems: ruleSchema.minItems ? ruleSchema.minItems + 1 : 1,
+      additionalItems: false,
+    };
+  }
+  // example: naming-convention rule
+  if (typeof ruleSchema.items === 'object' && ruleSchema.items) {
+    if (ruleSchema.items?.$defs) {
+      defaultSchema.$defs = ruleSchema.items.$defs;
+    }
+    return {
+      ...ruleSchema,
+      items: [defaultSchema],
+      additionalItems: ruleSchema.items,
+    };
+  }
+  // example eqeqeq
+  if (isArray(ruleSchema.anyOf)) {
+    return {
+      ...ruleSchema,
+      anyOf: ruleSchema.anyOf.map(item =>
+        getRuleJsonSchemaWithErrorLevel(name, item),
+      ),
+    };
+  }
+  // example logical-assignment-operators
+  if (isArray(ruleSchema.oneOf)) {
+    return {
+      ...ruleSchema,
+      oneOf: ruleSchema.oneOf.map(item =>
+        getRuleJsonSchemaWithErrorLevel(name, item),
+      ),
+    };
+  }
+  if (typeof ruleSchema !== 'object' || Object.keys(ruleSchema).length) {
+    console.error('unsupported rule schema', name, ruleSchema);
+  }
+  return {
+    type: 'array',
+    items: [defaultSchema],
+    minItems: 1,
+    additionalItems: false,
+  };
+}
+
 /**
  * Get the JSON schema for the eslint config
  * Currently we only support the rules and extends
  */
-export function getEslintJsonSchema(linter: CreateLinter): JSONSchema4 {
+export function getEslintJsonSchema(
+  linter: CreateLinter,
+  createRef: (name: string) => string,
+): JSONSchema4 {
   const properties: Record<string, JSONSchema4> = {};
 
   for (const [, item] of linter.rules) {
@@ -14,21 +104,7 @@ export function getEslintJsonSchema(linter: CreateLinter): JSONSchema4 {
       description: item.description,
       title: item.name.startsWith('@typescript') ? 'Rules' : 'Core rules',
       default: 'off',
-      oneOf: [
-        {
-          type: ['string', 'number'],
-          enum: ['off', 'warn', 'error', 0, 1, 2],
-        },
-        {
-          type: 'array',
-          items: [
-            {
-              type: ['string', 'number'],
-              enum: ['off', 'warn', 'error', 0, 1, 2],
-            },
-          ],
-        },
-      ],
+      oneOf: [defaultRuleSchema, { $ref: createRef(item.name) }],
     };
   }
 

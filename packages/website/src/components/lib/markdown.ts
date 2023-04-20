@@ -15,7 +15,7 @@ function createSummary(
 }
 
 function createSummaryJson(obj: string, field: string, title: string): string {
-  if (!/^\{[\s\n\r]*}[\s\n\r]*$/gm.test(obj)) {
+  if (obj && obj.length > 0) {
     return createSummary(obj, title, 'json', 10);
   }
   return '';
